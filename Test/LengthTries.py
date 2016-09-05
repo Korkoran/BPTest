@@ -16,7 +16,7 @@ for dictate in dictates:
     out.append(float(mistakes)/dictate.tries)
     #print str(dictate.length) + ' ' + str(dictate.tries)
 
-newlist = sorted(Util.getAllDictates(), key = lambda x: x.length, reverse=True)
+#newlist = sorted(Util.getAllDictates(), key = lambda x: x.length, reverse=True)
 
 #print newlist
 
@@ -31,10 +31,15 @@ lowPopularity = (Util.getConcept(3).dictates+ Util.getConcept(8).dictates+ Util.
 print len(veryPopular)
 print len(mediumPopular)
 print len(lowPopularity)
-
+'''
+tmp1 = sorted(veryPopular, key=lambda x: len(x.answers), reverse=True)
+tmp2 = sorted(mediumPopular, key=lambda y: len(y.answers), reverse=True)
+tmp3 = sorted(lowPopularity, key=lambda z: len(z.answers), reverse=True)
+'''
 tmp1 = sorted(veryPopular, key=lambda x: x.length, reverse=True)
-tmp2 = sorted(mediumPopular, key=lambda  y: y.length, reverse=True)
-tmp3 = sorted(lowPopularity, key=lambda  z: z.length, reverse=True)
+tmp2 = sorted(mediumPopular, key=lambda y: y.length, reverse=True)
+tmp3 = sorted(lowPopularity, key=lambda z: z.length, reverse=True)
+
 
 length1 = []
 tries1 = []

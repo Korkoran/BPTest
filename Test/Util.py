@@ -1,4 +1,6 @@
 import pandas as pd
+import re
+import numpy
 
 dictateSession = pd.read_csv('CSV/dictateSessionLog.csv', header = 0, sep = ';')
 dictate = pd.read_csv('CSV/dictate.csv', header = 0, sep = ';')
@@ -58,6 +60,7 @@ class dictat:
     length = None
     answers = []
     concentration = None
+    mistakes = None
 
     def __repr__(self):
         return '\n{ DICTATE\n Id: ' + str(self.id) + '\n concept: '\
@@ -66,20 +69,20 @@ class dictat:
 #vytvori objekt dictat nastavi atributy a vrati ho
 def getDictat(dictId):
     d = dictat()
-    d.id = dictId
 
     tmp = dictate.loc[dictate['id']==dictId]
-
-    d.title = tmp.title.values[0]
-    d.concept = tmp.concept.values[0]
     dictText = tmp['dictate'].tolist()[0].split()
+    search = dictateSession.loc[dictateSession['dictate'] == dictId]
+
+    tmp2 = [word for word in dictText if "|" in word]
+
+    d.id = dictId
+    d.title = tmp.title.values[0]
+    d.answers = tmp2
+    d.tries = len(search)
     d.length = len(dictText)
-    d.tries = len(dictateSession[dictateSession['dictate']==dictId])
-
-    for word in dictText:
-        if "|" in word:
-            d.answers.append(word)
-
+    d.concept = tmp.concept.values[0]
+    d.mistakes = search.mistakes.sum() / float(len(search))
     d.concentration = d.length / float(len(d.answers))
 
     return d
@@ -87,11 +90,20 @@ def getDictat(dictId):
 #vraci pole objektu dictat
 def getAllDictates():
     tmp = dictate.id.unique()
-    dictates = []
-    for d in tmp:
-        dictates.append(getDictat(d))
+
+    dictates = [getDictat(d) for d in tmp]
 
     return dictates
+
+#vypocita prumerny pocet chyb v konceptu
+def conceptMistakes(conceptId):
+    rows = len(dictateSession.loc[dictateSession['concept'] == conceptId])
+    tmp = dictateSession.loc[dictateSession['concept'] == conceptId, 'mistakes'].sum()
+    if rows == 0.0:
+        return 0
+    else:
+        return tmp / float(rows)
+
 
 #vraci pocet vsech chyb, ktere uzivatele udelali v diktatu s id dictId
 def mistakesInDict(dictId):
@@ -105,9 +117,7 @@ def mistakesInDict(dictId):
 def numDictates(concept):
     tmp = dictate.loc[dictate['concept'] == concept, 'id'].values.tolist()
     tmp = [int(i) for i in tmp]
-    dictates = []
-    for i in tmp:
-        dictates.append(getDictat(i))
+    dictates = [getDictat(i) for i in tmp]
     return dictates
 
 #vraci objekt typu concept
@@ -116,17 +126,74 @@ def getConcept(conceptNum):
     c.id = conceptNum
     c.dictates = numDictates(conceptNum)
     c.realName = diktaty_koncepty[conceptNum]
+    c.mistakes = conceptMistakes(conceptNum)
     return c
 
 #vraci pole objektu typu concept
 def getAllConcepts():
-    all = []
-    for concept in CONCEPTS:
-        all.append(getConcept(concept))
+    all = [getConcept(concept) for concept in CONCEPTS]
     return all
 
+def wrongWordsForConcept(conceptId):
+    c = getConcept(conceptId)
+    input = [getMostWrongWords(m.id) for m in c.dictates]
+    return input
+
+
+
+#vraci slovnik s odpovedmi a poctem spatnych odpovedi
+def getMostWrongWords(dictId):
+    d = getDictat(dictId)
+    answers = d.answers
+
+    tmp = dictateSession.loc[dictateSession['dictate'] == dictId, 'answers'].values
+    g = [0]*len(answers)
+    newList = [x for x in tmp if str(x) != 'nan']
+
+    for x in newList:
+        for i in range(len(x)):
+            if x[i] == "0":
+                g[i] +=1
+
+    #mistakes.append(h/float(len(newList))*100) ---- procento
+    #mistakes.append(h) # ---- skutecny pocet
+    mistakes = [h for h in g]
+
+    result = dict(zip(answers, mistakes))
+    return result
+
+
+#DODELAT!!!
+def answerFormat(answer):
+    if '01' in answer:
+        return re.match(r"[^[]*\[([^]]*)\]", answer, re.UNICODE).groups()[0]
+    if '10' in answer:
+        return re.match(r"[^[]*\[([^]]*)\]", answer, re.UNICODE).groups()[0]
 print getDictat(4).tries
 print 'ahoj\xc3\xa9'.decode('utf-8')
 print 'dacan\xc3\xa9'
 
-print mistakesInDict(4)
+print getDictat(10).mistakes / len(getDictat(10).answers)
+print getDictat(4).length
+print len(getDictat(4).answers)
+print getMostWrongWords(4)
+
+slovo = "11011010"
+pozice = []
+for i in range(len(slovo)):
+    if slovo[i] == "0":
+        pozice.append(i)
+
+words = []
+for x in pozice:
+    words.append(getDictat(4).answers[x])
+
+print pozice
+
+
+pokus = dictateSession.loc[dictateSession['user'] == 182168]
+print pokus
+koncepty = pokus.concept.unique()
+print koncepty
+for konc in koncepty:
+    print "Koncept: " + str(konc) + " pocet diktatu: " + str(len(pokus.loc[pokus['concept'] == konc, 'dictate']))
