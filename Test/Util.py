@@ -7,6 +7,9 @@ dictate = pd.read_csv('CSV/dictate.csv', header = 0, sep = ';')
 # koncepty 5,6 nemaji zatim zaznam v session jinak
 # CONCEPTS = sorted(dictate.concept.unique())
 CONCEPTS = [1,2,3,4,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25]
+STRCONCEPTS = [str(i) for i in CONCEPTS]
+#pro grafy kde se vyskytuji koncepty 5 a 6
+numConcept = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]
 
 diktaty_koncepty = {
 1: 'Vyjm sl B',
@@ -15,7 +18,7 @@ diktaty_koncepty = {
 4: 'Shoda',
 7: 'Koncovky prid',
 8: 'n/nn',
-9: 'me mne',
+9: 'me/mne',
 10: 's / z',
 11: 'Vyjm sl L',
 12: 'Vyjm sl S',
@@ -82,7 +85,10 @@ def getDictat(dictId):
     d.tries = len(search)
     d.length = len(dictText)
     d.concept = tmp.concept.values[0]
-    d.mistakes = search.mistakes.sum() / float(len(search))
+    if len(search)!= 0:
+        d.mistakes = search.mistakes.sum() / float(len(search))
+    else:
+        d.mistakes = 0
     d.concentration = d.length / float(len(d.answers))
 
     return d
@@ -141,7 +147,7 @@ def wrongWordsForConcept(conceptId):
 
 
 
-#vraci slovnik s odpovedmi a poctem spatnych odpovedi
+#vraci slovnik s odpovedmi a poctem spatnych odpovedi pro diktat
 def getMostWrongWords(dictId):
     d = getDictat(dictId)
     answers = d.answers
@@ -169,14 +175,12 @@ def answerFormat(answer):
         return re.match(r"[^[]*\[([^]]*)\]", answer, re.UNICODE).groups()[0]
     if '10' in answer:
         return re.match(r"[^[]*\[([^]]*)\]", answer, re.UNICODE).groups()[0]
-print getDictat(4).tries
-print 'ahoj\xc3\xa9'.decode('utf-8')
-print 'dacan\xc3\xa9'
 
-print getDictat(10).mistakes / len(getDictat(10).answers)
-print getDictat(4).length
-print len(getDictat(4).answers)
-print getMostWrongWords(4)
+def conceptPopularity(conceptId):
+    allTries = len(dictateSession)
+    conceptTries = len(dictateSession.loc[dictateSession['concept']==conceptId])
+    return conceptTries/float(allTries)*100
+
 
 slovo = "11011010"
 pozice = []

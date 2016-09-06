@@ -47,7 +47,7 @@ print "<<<<<<<<" + str(chyby) + ">>>>>>"
 print "<<<<<<<<" + str(pomerChyb) + ">>>>>>"
 for i in range(len(dictId)):
     print "diktat cislo: " + str(dictId[i])+ "ma delku " + str(delky[i]) + " ma pomer slov/odpovedi "+\
-          str(float(odpovedi[i])/delky[i]*100)+ " prumerny pocet chyb " + str(chyby[i]) + " pomer chyb vyhledem k delce " + str(pomer[i]*100)
+          str(float(odpovedi[i])/delky[i]*100)+ " prumerny pocet chyb " + str(chyby[i]) + " pomer chyb vyhledem k delce " + str(pomer[i]*100) + " / " + str(pomerChyb[i])
 #print chyby
 plt.plot(delky, pokusy, 'ro')
 plt.plot(delky, pomerChyb, 'bo')
