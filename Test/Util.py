@@ -1,8 +1,8 @@
 import pandas as pd
 import re
-import numpy
 
 dictateSession = pd.read_csv('CSV/dictateSessionLog.csv', header = 0, sep = ';')
+sessionNoNan = pd.read_csv('CSV/dictateSessionLog.csv', header = 0, sep = ';', skiprows=(1,603))
 dictate = pd.read_csv('CSV/dictate.csv', header = 0, sep = ';')
 # koncepty 5,6 nemaji zatim zaznam v session jinak
 # CONCEPTS = sorted(dictate.concept.unique())
@@ -86,7 +86,7 @@ def getDictat(dictId):
     d.length = len(dictText)
     d.concept = tmp.concept.values[0]
     if len(search)!= 0:
-        d.mistakes = search.mistakes.sum() / float(len(search))
+        d.mistakes = (search.mistakes.sum() / float(len(search)))/len(d.answers)*100
     else:
         d.mistakes = 0
     d.concentration = d.length / float(len(d.answers))
@@ -145,6 +145,19 @@ def wrongWordsForConcept(conceptId):
     input = [getMostWrongWords(m.id) for m in c.dictates]
     return input
 
+#vypocita skutecnou pravdepodobnost chyby v konceptu
+def realConceptMistakes(concID):
+    conceptDataFrame = dictateSession.loc[dictateSession['concept'] == concID]
+    listOfAnswers = conceptDataFrame.answers.tolist()
+    mistakes = conceptDataFrame.mistakes.sum()
+    bezNan = [x for x in listOfAnswers if not isinstance(x, float)]
+
+    lenAllAnswers = 0
+    for ans in bezNan:
+        lenAllAnswers += len(ans)
+    if lenAllAnswers ==0:
+        return 0
+    return mistakes / float(lenAllAnswers) * 100
 
 
 #vraci slovnik s odpovedmi a poctem spatnych odpovedi pro diktat
@@ -176,12 +189,14 @@ def answerFormat(answer):
     if '10' in answer:
         return re.match(r"[^[]*\[([^]]*)\]", answer, re.UNICODE).groups()[0]
 
+#vypocita procentualni zastoupeni konceptu v logu
 def conceptPopularity(conceptId):
     allTries = len(dictateSession)
     conceptTries = len(dictateSession.loc[dictateSession['concept']==conceptId])
     return conceptTries/float(allTries)*100
 
-
+print realConceptMistakes(1)
+print getDictat(40).mistakes
 slovo = "11011010"
 pozice = []
 for i in range(len(slovo)):

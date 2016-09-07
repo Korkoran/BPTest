@@ -15,7 +15,6 @@ print vystup.head()
 #Zkusit stahnout novou verzi dictatesession a pridat 5,6
 concepts = Util.CONCEPTS
 for concept in concepts:
-    time = 0
     if float(len(vystup.loc[vystup['concept'] == concept])) == 0.0:
 
         averages.append(0)

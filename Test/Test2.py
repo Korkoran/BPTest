@@ -25,7 +25,9 @@ plt.xticks(numConcept, concepts2)
 plt.axhline(y=soucet, color = 'green')
 plt.grid(True)
 plt.axis([0,24,0,2500])
-plt.title('Avarage tries by concept')
+plt.title('Pocet vyplneni uzivateli')
+plt.xlabel('Koncept')
+plt.ylabel('Vyplneni')
 
 plt.show()
 

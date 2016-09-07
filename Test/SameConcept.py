@@ -1,7 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import Util
-import Dictate
 
 dictates = Util.getDictate()
 vystup = Util.getDictateSession()

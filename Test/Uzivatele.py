@@ -36,7 +36,7 @@ def concepts_per_user():
     konec.append(zbytek)
 
     print "Pocet uzivatelu s vyssim poctem vyzkousenych konceptu: " + str(len(users) - zbytek)
-    plt.pie(konec, labels=labels, shadow = True, startangle=0, explode=explode, autopct='%1.1f%%')
+    plt.pie(konec, labels=labels, startangle=0, explode=explode, autopct='%1.1f%%')
 
     plt.title('Kolik konceptu uzivatel vyzkousi')
     plt.show()
