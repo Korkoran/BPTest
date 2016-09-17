@@ -2,6 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import Util
+import numpy as np
 
 
 concept = Util.getConcept(20)
@@ -63,13 +64,21 @@ for t in tmp3:
     length3.append(t.length)
     tries3.append(t.tries)
 
+fit1 = np.polyfit(length1,tries1,1)
+fit_fn1 = np.poly1d(fit1)
+
+fit2 = np.polyfit(length2,tries2,1)
+fit_fn2 = np.poly1d(fit2)
+
+fit3 = np.polyfit(length3,tries3,1)
+fit_fn3 = np.poly1d(fit3)
 
 print tries1
 print length1
 
-plt.plot(length1, tries1, 'ro')
-plt.plot(length2, tries2, 'bo')
-plt.plot(length3, tries3, 'go')
+plt.plot(length1, tries1, 'ro', length1, fit_fn1(length1), '-r')
+plt.plot(length2, tries2, 'bo', length2, fit_fn2(length2), '-b')
+plt.plot(length3, tries3, 'go', length3, fit_fn3(length3), '-g')
 
 plt.title("Graf 2")
 plt.xlabel("Delka diktatu")

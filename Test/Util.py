@@ -1,5 +1,6 @@
 import pandas as pd
 import re
+import collections
 
 dictateSession = pd.read_csv('CSV/dictateSessionLog.csv', header = 0, sep = ';')
 sessionNoNan = pd.read_csv('CSV/dictateSessionLog.csv', header = 0, sep = ';', skiprows=(1,603))
@@ -170,6 +171,10 @@ def getMostWrongWords(dictId):
     newList = [x for x in tmp if str(x) != 'nan']
 
     for x in newList:
+        #zjistit okoli chyby, najit moznou pricinu
+        if len(x) > len(answers):
+            print "ERROR in log, more answers than possible"
+            continue
         for i in range(len(x)):
             if x[i] == "0":
                 g[i] +=1
@@ -178,11 +183,12 @@ def getMostWrongWords(dictId):
     #mistakes.append(h) # ---- skutecny pocet
     mistakes = [h for h in g]
 
-    result = dict(zip(answers, mistakes))
+    result = collections.OrderedDict(zip(answers, mistakes))
+    #result = dict(zip(answers, mistakes))
     return result
 
 
-#DODELAT!!!
+#DODELAT
 def answerFormat(answer):
     if '01' in answer:
         return re.match(r"[^[]*\[([^]]*)\]", answer, re.UNICODE).groups()[0]
@@ -195,24 +201,31 @@ def conceptPopularity(conceptId):
     conceptTries = len(dictateSession.loc[dictateSession['concept']==conceptId])
     return conceptTries/float(allTries)*100
 
-print realConceptMistakes(1)
-print getDictat(40).mistakes
-slovo = "11011010"
-pozice = []
-for i in range(len(slovo)):
-    if slovo[i] == "0":
-        pozice.append(i)
+neco = getDictat(95)
 
-words = []
-for x in pozice:
-    words.append(getDictat(4).answers[x])
+#predelat na nejakou normalni formu, overit jestli to sedi, zjistit cisla radku v logu
+#nektere chyby jsou zasahy admina
+def logError(dictId):
+    session = dictateSession.loc[dictateSession['dictate']==dictId, 'answers'].tolist()
+    bezNan = [x for x in session if not isinstance(x, float)]
+    for n in bezNan:
+        if len(n) !=len(getDictat(dictId).answers):
+            print 'delka ma byt: ' + str(len(getDictat(dictId).answers))+ ' ale je: '+ str(len(n)) + ' chybna data: '+ str(n)
 
-print pozice
-
-
-pokus = dictateSession.loc[dictateSession['user'] == 182168]
-print pokus
-koncepty = pokus.concept.unique()
-print koncepty
-for konc in koncepty:
-    print "Koncept: " + str(konc) + " pocet diktatu: " + str(len(pokus.loc[pokus['concept'] == konc, 'dictate']))
+logError(93)
+#print getMostWrongWords(30)
+#for i in range(74,80):
+#    print getMostWrongWords(i).values()
+''''
+print getMostWrongWords(103).values()
+print getDictat(103).answers[-0]
+print getMostWrongWords(104).values()
+#print getMostWrongWords(105).values()
+print (getDictat(105).answers[0])
+print getDictat(105)
+print getMostWrongWords(106).values()
+print getMostWrongWords(107).values()
+print getMostWrongWords(108).values()
+print getMostWrongWords(109).values()
+print getMostWrongWords(110).values()'''
+print '[' + ','.join("'" + str(x) + "'" for x in getDictat(105).answers) + ']'

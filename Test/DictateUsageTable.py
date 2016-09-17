@@ -37,4 +37,4 @@ col_Labels = ['Diktat Id', 'Koncept Id', 'Sance na chybu', 'Prumer v konceptu']
 table = plt.table(cellText = out,
                   colLabels = col_Labels,
                   loc = 'center')
-#plt.show()
+plt.show()
