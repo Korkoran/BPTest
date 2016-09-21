@@ -2,7 +2,7 @@ import pandas as pd
 import re
 import collections
 
-dictateSession = pd.read_csv('CSV/dictateSessionLog.csv', header = 0, sep = ';')
+dictateSession = pd.read_csv('CSV/dictateSessionLog.csv', header = 0, sep = ';', parse_dates=['time'])
 sessionNoNan = pd.read_csv('CSV/dictateSessionLog.csv', header = 0, sep = ';', skiprows=(1,603))
 dictate = pd.read_csv('CSV/dictate.csv', header = 0, sep = ';')
 # koncepty 5,6 nemaji zatim zaznam v session jinak
@@ -203,6 +203,12 @@ def conceptPopularity(conceptId):
 
 neco = getDictat(95)
 
+#najde pro zadane datum prvni zaznam v logu
+#metoda pro DAU
+#vraci id zaznamu
+def getNextDateTimeFrame(time):
+    return dictateSession.loc[dictateSession['time']>pd.Timestamp(time), 'id'].tolist()[0]
+
 #predelat na nejakou normalni formu, overit jestli to sedi, zjistit cisla radku v logu
 #nektere chyby jsou zasahy admina
 def logError(dictId):
@@ -212,7 +218,10 @@ def logError(dictId):
         if len(n) !=len(getDictat(dictId).answers):
             print 'delka ma byt: ' + str(len(getDictat(dictId).answers))+ ' ale je: '+ str(len(n)) + ' chybna data: '+ str(n)
 
-logError(93)
+'''tmp = getAllDictates()
+for t in tmp:
+    logError(t.id)
+logError(93)'''
 #print getMostWrongWords(30)
 #for i in range(74,80):
 #    print getMostWrongWords(i).values()
