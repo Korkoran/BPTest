@@ -51,7 +51,6 @@ tries2 = []
 length3 = []
 tries3 = []
 
-
 for t in tmp1:
     length1.append(t.length)
     tries1.append(t.tries)
@@ -63,23 +62,40 @@ for t in tmp2:
 for t in tmp3:
     length3.append(t.length)
     tries3.append(t.tries)
+'''
+for t in tmp1:
+    length1.append(len(t.answers))
+    tries1.append(t.tries)
 
-fit1 = np.polyfit(length1,tries1,2)
+for t in tmp2:
+    length2.append(len(t.answers))
+    tries2.append(t.tries)
+
+for t in tmp3:
+    length3.append(len(t.answers))
+    tries3.append(t.tries)
+'''
+fit1 = np.polyfit(length1,tries1,1)
 fit_fn1 = np.poly1d(fit1)
 
-fit2 = np.polyfit(length2,tries2,2)
+fit2 = np.polyfit(length2,tries2,1)
 fit_fn2 = np.poly1d(fit2)
 
-fit3 = np.polyfit(length3,tries3,2)
+fit3 = np.polyfit(length3,tries3,1)
 fit_fn3 = np.poly1d(fit3)
 
 print tries1
 print length1
+print length2
 
 plt.plot(length1, tries1, 'ro', length1, fit_fn1(length1), '-r')
 plt.plot(length2, tries2, 'bo', length2, fit_fn2(length2), '-b')
 plt.plot(length3, tries3, 'go', length3, fit_fn3(length3), '-g')
-
+'''
+plt.plot(length1, tries1, 'ro')
+plt.plot(length2, tries2, 'bo')
+plt.plot(length3, tries3, 'go')
+'''
 plt.title("Graf 2")
 plt.xlabel("Delka diktatu")
 plt.ylabel("Pocet vyplneni")

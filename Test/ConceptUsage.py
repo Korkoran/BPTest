@@ -132,8 +132,8 @@ def words_with_most_mistakes():
                 if x>prumer*2:
                     print x
 
-#words_with_most_mistakes()
-conceptUsage()
+words_with_most_mistakes()
+#conceptUsage()
 #game_length_per_concept()
 ''''
 words_with_most_mistakes()
