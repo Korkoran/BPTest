@@ -1,10 +1,15 @@
 import pandas as pd
 import re
 import collections
+import os.path
 
-dictateSession = pd.read_csv('CSV/dictateSessionLog.csv', header = 0, sep = ';', parse_dates=['time'])
-sessionNoNan = pd.read_csv('CSV/dictateSessionLog.csv', header = 0, sep = ';', skiprows=(1,603))
-dictate = pd.read_csv('CSV/dictate.csv', header = 0, sep = ';')
+current_dir = os.getcwd()
+parent = os.path.split(current_dir)
+
+
+dictateSession = pd.read_csv('%s/CSV/dictateSessionLog.csv' % (parent[0]), header = 0, sep = ';', parse_dates=['time'])
+sessionNoNan = pd.read_csv('%s/CSV/dictateSessionLog.csv' % (parent[0]), header = 0, sep = ';', skiprows=(1,603))
+dictate = pd.read_csv('%s/CSV/dictate.csv' % (parent[0]), header = 0, sep = ';')
 # koncepty 5,6 nemaji zatim zaznam v session jinak
 # CONCEPTS = sorted(dictate.concept.unique())
 CONCEPTS = [1,2,3,4,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25]
