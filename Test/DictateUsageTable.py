@@ -34,7 +34,7 @@ print out
 print diff
 col_Labels = ['Diktat Id', 'Koncept Id', 'Sance na chybu', 'Prumer v konceptu']
 
-table = plt.table(cellText = out,
+table = plt.table(cellText = out[0:20],
                   colLabels = col_Labels,
                   loc = 'center')
 plt.show()

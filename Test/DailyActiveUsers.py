@@ -62,4 +62,4 @@ def accessHours(startDate, endDate):
     print userClock
     print sum(userClock)
 
-accessHours("2016-09-13", "2016-09-14")
+accessHours("2016-08-01", "2016-09-01")
