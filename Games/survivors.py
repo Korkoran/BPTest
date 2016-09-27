@@ -111,6 +111,9 @@ loweringMistakes()
 def sameLevelMistakes():
     pass
 
+#zjisti chybovost ve strilecce kde jsou texty delsi
+def tooLong():
+    pass
 
 #conceptMistakes("strilecka")
 #favConcepts("roboti")
