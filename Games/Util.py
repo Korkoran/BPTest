@@ -19,4 +19,3 @@ tetris_level = pd.read_csv('%s/CSV/tetris_level.csv' % (parent[0]), header = 0, 
 tetris_session_log = pd.read_csv('%s/CSV/tetris_session_log.csv' % (parent[0]), header = 0, sep = ';', parse_dates=['time'], skiprows = range(1,100))
 tetris_vzor = pd.read_csv('%s/CSV/tetris_vzor.csv' % (parent[0]), header = 0, sep = ';')
 tetris_word = pd.read_csv('%s/CSV/tetris_word.csv' % (parent[0]), header = 0, sep = ';')
-

@@ -1,109 +1,135 @@
 import Util
 import matplotlib.pyplot as plt
+import numpy
 
-logsStrilecka = Util.strilecka_session_log
-logsRoboti = Util.roboti_session_log
-logsTetris = Util.tetris_session_log
+logs_strilecka = Util.strilecka_session_log
+logs_roboti = Util.roboti_session_log
+logs_tetris = Util.tetris_session_log
+
+log = None
+concepts = None
 
 strileckaConcepts = [1, 2, 3, 4, 5, 6, 7, 9, 10, 11]
 robotiConcepts = [1,2,3,4,5,6]
 tetrisConcepts = [1,2,3,4,5,6,7,8,9,10]
 
+#otestuje jestli hra existuje, nastavi globalni promenne log a concepts
+def testGameName(game):
+    global log
+    global concepts
+    if game == "tetris":
+        log = logs_tetris
+        concepts = tetrisConcepts
+    elif game == "strilecka":
+        log = logs_strilecka
+        concepts = strileckaConcepts
+    elif game == "roboti":
+        log = logs_roboti
+        concepts = robotiConcepts
+    else:
+        raise ValueError("Unknown game")
+
+#kolik lidi se nedostalo pres prvni level
+def firstLevelLossers(game):
+    users = logs_roboti.user.unique()
+    u = 0
+    testGameName(game)
+
+    for user in users:
+        tmp= log.loc[(log['user']==user) & (log['level'] == 1)]
+        if game == "roboti":
+            userConcepts = tmp.robotConcept.unique()
+        else:
+            userConcepts = tmp.concept.unique()
+        for c in userConcepts:
+            if game == "roboti":
+                local = tmp.loc[(tmp['robotConcept']==c), 'success'].toslit()
+            else:
+                local = tmp.loc[(tmp['concept']== c), 'success'].tolist()
+            if 1 not in local:
+                u += 1
+    return u
+
+#kolik uzivatelu se dostalo pres levely
 def survivors(game):
-    sur = [0]* 8
-    restart = [0]*8
+    sur = [0]* 10
+    restart = [0]*10
     levels = [1,2,3,4,5,6,7]
+
     for level in levels:
         if game == "strilecka":
-            sur[level] = logsStrilecka.loc[logsStrilecka['level']==level, "success"].tolist().count(1)
-            restart[level] = logsStrilecka.loc[logsStrilecka['level']==level, "success"].tolist().count(0)
+            sur[level] = logs_strilecka.loc[logs_strilecka['level'] == level, "success"].tolist().count(1)
+            restart[level] = logs_strilecka.loc[logs_strilecka['level'] == level, "success"].tolist().count(0)
         elif game == "tetris":
-            sur[level] = logsTetris.loc[logsTetris['level']==level, "success"].tolist().count(1)
-            restart[level] = logsTetris.loc[logsTetris['level']==level, "success"].tolist().count(0)
+            sur[level] = logs_tetris.loc[logs_tetris['level'] == level, "success"].tolist().count(1)
+            restart[level] = logs_tetris.loc[logs_tetris['level'] == level, "success"].tolist().count(0)
         elif game == "roboti":
-            sur[level] = logsRoboti.loc[logsRoboti['level']==level, "success"].tolist().count(1)
-            restart[level] = logsRoboti.loc[logsRoboti['level']==level, "success"].tolist().count(0)
+            sur[level] = logs_roboti.loc[logs_roboti['level'] == level, "success"].tolist().count(1)
+            restart[level] = logs_roboti.loc[logs_roboti['level'] == level, "success"].tolist().count(0)
         else:
-            print "Unknown game"
-    print restart[1:]
-    print sur[1:]
+            raise ValueError("Unknown game")
 
+    sur[0] = sur[1] + firstLevelLossers(game)
+    print restart[1:]
+    print sur
+
+#survivors("tetris")
 
 #oblibenost conceptu, nepoci s pridanim konceptu pocita vsechny dohromady
 def favConcepts(game):
     if game == "strilecka":
         for concept in strileckaConcepts:
-            print len(logsStrilecka.loc[logsStrilecka['concept']== concept])
+            print len(logs_strilecka.loc[logs_strilecka['concept'] == concept])
     elif game == "tetris":
         for concept in tetrisConcepts:
-            print len(logsTetris.loc[logsTetris['concept']== concept])
+            print len(logs_tetris.loc[logs_tetris['concept'] == concept])
     elif game == "roboti":
         for concept in robotiConcepts:
-            print len(logsRoboti.loc[logsRoboti['robotConcept']== concept])
+            print len(logs_roboti.loc[logs_roboti['robotConcept'] == concept])
     else:
-        print "Unknown game"
+        raise  ValueError("Unknown game")
 
-
-
+favConcepts("strilecka")
 
 #prumerne chyby pro kazdy koncept
 #strilecka ma max 3 naboje
 def conceptMistakes(game):
-    if game == "strilecka":
-        for concept in strileckaConcepts:
-            tmp =logsStrilecka.loc[logsStrilecka['concept']== concept, 'mistakes'].tolist()
-            sumMistakes = sum(tmp)
-            length = len(tmp)
-            if length !=0:
-                avg = sumMistakes/float(length)
-                print avg
-
+    log = None
+    concepts = None
+    if game == "tetris":
+        log = logs_tetris
+        concepts = tetrisConcepts
+    elif game == "strilecka":
+        log = logs_strilecka
+        concepts = strileckaConcepts
     elif game == "roboti":
-        for concept in robotiConcepts:
-            tmp =logsRoboti.loc[logsRoboti['robotConcept']== concept, 'mistakes'].tolist()
-            sumMistakes = sum(tmp)
-            length = len(tmp)
-            if length !=0:
-                avg = sumMistakes/float(length)
-                print avg
-            else:
-                print 0
-
-    elif game == "tetris":
-        for concept in tetrisConcepts:
-            tmp =logsTetris.loc[logsTetris['concept']== concept, 'mistakes'].tolist()
-            sumMistakes = sum(tmp)
-            length = len(tmp)
-            if length !=0:
-                avg = sumMistakes/float(length)
-                print avg
-
+        log = logs_roboti
+        concepts = robotiConcepts
     else:
-        print "Unknown game"
+        raise ValueError("Unknown game")
 
+    for concept in concepts:
+        if game == "roboti":
+            tmp = log.loc[log['robotConcept'] == concept, 'mistakes'].tolist()
+        else:
+            tmp =log.loc[log['concept']== concept, 'mistakes'].tolist()
+        sumMistakes = sum(tmp)
+        length = len(tmp)
+        if length !=0:
+            avg = sumMistakes/float(length)
+            print avg
+        else:
+            print 0
+
+#conceptMistakes("roboti")
 def tryNextLevel(game):
     pass
 
-#kolik lidi se nedostalo pres prvni level
-users = logsRoboti.user.unique()
-u = 0
-for user in users:
-    tmp= logsRoboti.loc[(logsRoboti['user']==user) & (logsRoboti['level'] == 1)]
-    #print tmp
-
-    userConcepts = tmp.robotConcept.unique()
-    for c in userConcepts:
-        local = tmp.loc[(tmp['robotConcept']== c), 'success'].tolist()
-        #print local
-        if 1 not in local:
-            u += 1
-
-print u
+#firstLevelLossers("strilecka")
 
 #o kolik se zlepsili uzivatele pri druhem a dalsim pokusu
 def loweringMistakes():
     pass
-
 
 loweringMistakes()
 
@@ -115,6 +141,62 @@ def sameLevelMistakes():
 def tooLong():
     pass
 
+#otestuje jestli hra existuje a nastavi log a concepts
+
+
+#porovna ruzne hry, pocet pokusu, prumerny straveny cas na uzivatele
+#NEDOKONCENE
+def triesPerGame(game):
+
+    testGameName(game)
+
+    users = logs_strilecka.user.unique()
+    log = logs_strilecka.loc[(logs_strilecka['gameLength'] > 3000) & (logs_strilecka['gameLength'] < 50000)]
+    allTimes = []
+    for user in users:
+        allTimes.append(sum(log.loc[log['user'] == user, 'gameLength'].tolist()))
+    print allTimes
+    print numpy.mean(allTimes)
+
+#triesPerGame("tetris")
+
+#vraci dataframe pro casovou analyzu (bez prilis dlouhych casu)
+def logForTime(game):
+    testGameName(game)
+
+    pole = None
+    low_time = 0
+    high_time = 0
+
+    if game=="strilecka":
+        pole = [0]*62
+        low_time = 3000
+        high_time = 50000
+
+    elif game == "tetris":
+        pole = [0]*1000
+        low_time = 1000
+        high_time = 230000
+
+    elif game == "roboti":
+        pole =[0]*150
+        low_time = 3000
+        high_time = 60000
+
+    game_lengths = log.gameLength.tolist()
+    for length in game_lengths:
+        position = length/1000 +1
+        pole[position] +=1
+
+    #print pole
+    #plt.plot(pole)
+    #plt.show()
+
+    real_log = log.loc[(log['gameLength'] > low_time) & (log['gameLength'] < high_time)]
+    return real_log
+
+#print log.head()
+#print logForTime("roboti")
 #conceptMistakes("strilecka")
 #favConcepts("roboti")
 #survivors("strilecka")
