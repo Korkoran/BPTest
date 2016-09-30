@@ -19,3 +19,36 @@ tetris_level = pd.read_csv('%s/CSV/tetris_level.csv' % (parent[0]), header = 0, 
 tetris_session_log = pd.read_csv('%s/CSV/tetris_session_log.csv' % (parent[0]), header = 0, sep = ';', parse_dates=['time'], skiprows = range(1,100))
 tetris_vzor = pd.read_csv('%s/CSV/tetris_vzor.csv' % (parent[0]), header = 0, sep = ';')
 tetris_word = pd.read_csv('%s/CSV/tetris_word.csv' % (parent[0]), header = 0, sep = ';')
+
+
+class strilecka:
+
+    id = None
+    concept = None
+    level = None
+    words = []
+
+    def __repr__(self):
+        return '\n\n STRILECKA LEVEL\nId: ' + str(self.id)+ '\nConcept: '\
+               + str(self.concept) + '\nWords: ' + str(self.words) + '\nLevel: ' + str(self.level)
+
+def get_strilecka_level(id):
+    s = strilecka()
+
+    log = strilecka_level.loc[strilecka_level['id'] == id]
+    s.id = id
+    tmp = strilecka_level_word.loc[strilecka_level_word['level'] == id , 'word'].tolist()
+    s.words = tmp
+    s.level = log.level.tolist()[0]
+    s.concept = log.concept.tolist()[0]
+
+    return s
+
+#vraci vsechny levely ve strilecce
+def get_all_strilecka_level():
+    all_ids = strilecka_level.id.unique()
+    all_levels = []
+    for id in all_ids:
+        all_levels.append(get_strilecka_level(id))
+
+    return all_levels
