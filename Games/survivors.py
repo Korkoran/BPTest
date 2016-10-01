@@ -3,6 +3,13 @@ import matplotlib.pyplot as plt
 import numpy
 #import scipy.stats as st
 
+
+'''
+z logu nejde vycist jak hra vypada (jestli uzivatel zaplnil nektery sloupec tak, ze nesel dokoncit nebo
+skladal slova tak aby level dokoncil - mene slov nez mista) - doporucit tolik rad aby tohle neslo udelat
+u tetrisu generovat slova doprostred ne nahodne, nelze zjistit v jakem vzoru dela uzivatel chyby
+umoznit uzivatelum pokracovat v tom levelu kde skoncili
+'''
 logs_strilecka = Util.strilecka_session_log
 logs_roboti = Util.roboti_session_log
 logs_tetris = Util.tetris_session_log
@@ -28,7 +35,7 @@ def testGameName(game):
         log = logs_roboti
         concepts = robotiConcepts
     else:
-        raise ValueError("Unknown game")
+        raise ValueError("Unknown game, use of one {'tetris', 'strilecka', 'roboti'}")
 
 # vraci dataframe pro casovou analyzu (bez prilis dlouhych casu)
 def logForTime(game):
@@ -109,13 +116,15 @@ def survivors(game):
     sur[0] = sur[1] + firstLevelLossers(game)
     print restart[1:]
     print sur
+
     plt.plot(sur, '-b')
     plt.plot(restart, '-r')
     plt.xticks(range(0,10))
     plt.grid(True)
     plt.show()
 
-#survivors("strilecka")
+#survivors("tetris")
+
 
 #oblibenost conceptu, nepoci s pridanim konceptu pocita vsechny dohromady
 def favConcepts(game):
@@ -152,6 +161,7 @@ def conceptMistakes(game):
             print 0
 
 #conceptMistakes("roboti")
+
 def tryNextLevel(game):
     pass
 
@@ -180,10 +190,9 @@ def tooLong():
             level_fail = log.loc[log['level'] == level, 'success'].tolist().count(0)
 
             print "level:" + str(level) + ": " + str(level_tries) + ":" + str(level_fail) + " Pomer je: " + str(float(level_fail)/(level_tries-level_fail))
-tooLong()
+#tooLong()
+
 #porovna chybovost v ruznych konceptech ve strilecce.
-
-
 
 #porovna ruzne hry, pocet pokusu, prumerny straveny cas na uzivatele
 #NEDOKONCENE
@@ -201,7 +210,57 @@ def triesPerGame(game):
 
 #triesPerGame("roboti")
 
+def number_of_users(game):
+    testGameName(game)
 
+    users = log.user.unique()
+
+    #print len(users) * triesPerGame(game)
+
+    print sum(log.gameLength.tolist())
+
+number_of_users("strilecka")
+number_of_users("tetris")
+number_of_users("roboti")
+
+#pro kazdou hru zjisti kolik prumerne slov uzivatel procvici
+#pro roboty z robot shot log
+#pro strilecku z delky levelu (pouze uspesne)
+#pro tetris stejne jako pro strilecku
+#pocita jenom uspesne pokusy - nejde zjistit kolik slov videl neuspesny uzivatel
+def number_of_practiced_words(game):
+    testGameName(game)
+    local_log = log.loc[log['success'] == 1]
+
+
+    if game == "tetris":
+        tetris_level_log = Util.tetris_level
+        number_of_words = 0
+
+        for index,row in local_log.iterrows():
+            tmp = tetris_level_log.loc[(tetris_level_log['concept'] == row['concept']) & (tetris_level_log['level'] == row['level']), 'words'].tolist()
+            string_tmp = ''.join(tmp)
+
+            number_of_words += sum([int(s) for s in string_tmp.split(',') if s.isdigit()])
+        print number_of_words
+    if game == "strilecka":
+        number_of_words = 0
+        strilecka_level_log = Util.strilecka_level_word
+        strilecka_level = Util.strilecka_level
+
+        for index, row in local_log.iterrows():
+            id = strilecka_level.loc[(strilecka_level['concept'] == row['concept']) & (strilecka_level['level'] == row['level']), 'id'].tolist()[0]
+            tmp = len(strilecka_level_log.loc[strilecka_level_log['level'] == id, 'word'].tolist())
+            number_of_words += tmp
+        print number_of_words
+
+    if game == "roboti":
+        pass
+
+number_of_practiced_words("tetris")
+#zjisti nejtezsi slova pro kazdou hru(asi nepujde)
+def most_difficult_words():
+    pass
 #print log.head()
 #print logForTime("roboti")
 #conceptMistakes("strilecka")

@@ -52,3 +52,5 @@ def get_all_strilecka_level():
         all_levels.append(get_strilecka_level(id))
 
     return all_levels
+
+#print get_all_strilecka_level()
