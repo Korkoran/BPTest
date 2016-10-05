@@ -1,6 +1,8 @@
 import Util
 import matplotlib.pyplot as plt
 import numpy
+from collections import OrderedDict
+from operator import itemgetter
 #import scipy.stats as st
 
 
@@ -117,6 +119,7 @@ def survivors(game):
     print restart[1:]
     print sur
 
+    plt.title(str(game) + " prezivsi")
     plt.plot(sur, '-b')
     plt.plot(restart, '-r')
     plt.xticks(range(0,10))
@@ -127,25 +130,36 @@ def survivors(game):
 
 
 #oblibenost conceptu, nepoci s pridanim konceptu pocita vsechny dohromady
+#DODELAT zavislost na testgame
 def favConcepts(game):
+    out = []
     if game == "strilecka":
         for concept in strileckaConcepts:
-            print len(logs_strilecka.loc[logs_strilecka['concept'] == concept])
+            out.append(len(logs_strilecka.loc[logs_strilecka['concept'] == concept]))
     elif game == "tetris":
         for concept in tetrisConcepts:
-            print len(logs_tetris.loc[logs_tetris['concept'] == concept])
+            out.append(len(logs_tetris.loc[logs_tetris['concept'] == concept]))
     elif game == "roboti":
         for concept in robotiConcepts:
-            print len(logs_roboti.loc[logs_roboti['robotConcept'] == concept])
+            out.append(len(logs_roboti.loc[logs_roboti['robotConcept'] == concept]))
     else:
         raise ValueError("Unknown game")
 
-#favConcepts("strilecka")
+    plt.bar(range(1,7), out, align='center')
+    plt.xticks(range(1,7))
+    plt.grid(True)
+    plt.show()
+
+favConcepts("roboti")
 
 #prumerne chyby pro kazdy koncept
-#strilecka ma max 3 naboje
+#strilecka ma max 3 naboje- divne vysledky(chybne odpovedi moc ovlivnuji prumer)
 def conceptMistakes(game):
     testGameName(game)
+
+    all_mistakes = sum(log.mistakes)/ float(len(log))
+
+    print "Kompletni prumer: " + str(all_mistakes)
 
     for concept in concepts:
         if game == "roboti":
@@ -162,18 +176,43 @@ def conceptMistakes(game):
 
 #conceptMistakes("roboti")
 
-def tryNextLevel(game):
-    pass
-
-#firstLevelLossers("strilecka")
 
 #o kolik se zlepsili uzivatele pri druhem a dalsim pokusu
+#nejede - potrebuje moc casu
+#log je serazeny sestupne, potreba obratit pole
+#podivne vysledky - jeste zkontrolovat - slova se muzou v n opakovat NEDOKONCENE
 def loweringMistakes():
-    pass
+    local_log = Util.roboti_shot_log
+    log = local_log[['user', 'word']]
+    lower = 0
+    higher = 0
+    first_right = 0
+    first_wrong = 0
+    two_and_longer = 0
+    #print log
+    for n in range(122000,122900):
+        user = log.user.tolist()[n]
+        word = log.word.tolist()[n]
+        pole = local_log.loc[(local_log['user']== user)& (local_log['word']==word), 'correct'].tolist()[::-1]
+
+        if len(pole)==2:
+            two_and_longer +=1
+            print two_and_longer
+            if (pole[0] == 1) & (pole[1]==0):
+                #print "ANO"
+                lower +=1
+            elif (pole[0] == 0) & (pole[1]==1):
+                higher +=1
+
+    print lower
+    print higher
+    print two_and_longer
+    #print local_log.loc[(local_log['user']==log.user.tolist[0]) & (local_log['word'] == log.word.tolist()[0])]
 
 loweringMistakes()
 
 #porovna chyby na stejnych levech v ruznych konceptech
+#nejde ruzne levely maji ruzne rychlosti a frekvence
 def sameLevelMistakes():
     pass
 
@@ -219,9 +258,9 @@ def number_of_users(game):
 
     print sum(log.gameLength.tolist())
 
-number_of_users("strilecka")
-number_of_users("tetris")
-number_of_users("roboti")
+#number_of_users("strilecka")
+#number_of_users("tetris")
+#number_of_users("roboti")
 
 #pro kazdou hru zjisti kolik prumerne slov uzivatel procvici
 #pro roboty z robot shot log
@@ -231,7 +270,6 @@ number_of_users("roboti")
 def number_of_practiced_words(game):
     testGameName(game)
     local_log = log.loc[log['success'] == 1]
-
 
     if game == "tetris":
         tetris_level_log = Util.tetris_level
@@ -257,10 +295,22 @@ def number_of_practiced_words(game):
     if game == "roboti":
         pass
 
-number_of_practiced_words("tetris")
-#zjisti nejtezsi slova pro kazdou hru(asi nepujde)
+#number_of_practiced_words("tetris")
+#zjisti nejtezsi slova pro kazdou hru(asi nepujde) - pujde pro roboty
+#slova maji jenom cisla
 def most_difficult_words():
-    pass
+    local_log = Util.roboti_shot_log
+    words = local_log.word.unique()
+    wrongs = []
+
+    for word in words:
+        wrong = len(local_log.loc[(local_log['word'] == word)& (local_log['correct'] == 0)])
+        wrongs.append(wrong)
+
+    d = dict(zip(words,wrongs))
+    ordered = OrderedDict(sorted(d.items(), key=itemgetter(1)))
+    print ordered
+#most_difficult_words()
 #print log.head()
 #print logForTime("roboti")
 #conceptMistakes("strilecka")
