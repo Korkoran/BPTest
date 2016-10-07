@@ -73,7 +73,8 @@ class dictat:
 
     def __repr__(self):
         return '\n{ DICTATE\n Id: ' + str(self.id) + '\n concept: '\
-               + str(self.concept) + '\n title: ' + str(self.title) + '\n length: ' + str(self.length)+' }'
+               + str(self.concept) + '\n title: ' + str(self.title) + '\n length: ' + str(self.length) +\
+                "\n Mistakes: " + str(self.mistakes) +' }'
 
 #vytvori objekt dictat nastavi atributy a vrati ho
 def getDictat(dictId):
@@ -244,3 +245,4 @@ print getMostWrongWords(108).values()
 print getMostWrongWords(109).values()
 print getMostWrongWords(110).values()'''
 print '[' + ','.join("'" + str(x) + "'" for x in getDictat(105).answers) + ']'
+print getConcept(4)

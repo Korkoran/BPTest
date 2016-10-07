@@ -13,7 +13,10 @@ strilecka_level_word = pd.read_csv('%s/CSV/strilecka_level_word.csv' % (parent[0
 
 roboti_level = pd.read_csv('%s/CSV/roboti_level.csv' % (parent[0]), header = 0, sep = ';')
 roboti_session_log = pd.read_csv('%s/CSV/roboti_session_log.csv' % (parent[0]), header = 0, sep = ';', parse_dates=['time'], skiprows = range(1,100))
-roboti_shot_log = pd.read_csv('%s/CSV/roboti_shot_log.csv' % (parent[0]), header = 0, sep = ';')
+
+#trva prilis dlouho, nacitame jenom pri zavolani metody
+def get_roboti_shot_log():
+    return pd.read_csv('%s/CSV/roboti_shot_log.csv' % (parent[0]), header = 0, sep = ';')
 
 tetris_level = pd.read_csv('%s/CSV/tetris_level.csv' % (parent[0]), header = 0, sep = ';')
 tetris_session_log = pd.read_csv('%s/CSV/tetris_session_log.csv' % (parent[0]), header = 0, sep = ';', parse_dates=['time'], skiprows = range(1,100))

@@ -3,8 +3,7 @@ import matplotlib.pyplot as plt
 import numpy
 from collections import OrderedDict
 from operator import itemgetter
-#import scipy.stats as st
-
+import scipy.stats as st
 
 '''
 z logu nejde vycist jak hra vypada (jestli uzivatel zaplnil nektery sloupec tak, ze nesel dokoncit nebo
@@ -23,8 +22,9 @@ strileckaConcepts = [1, 2, 3, 4, 5, 6, 7, 9, 10, 11]
 robotiConcepts = [1, 2, 3, 4, 5, 6]
 tetrisConcepts = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
-#otestuje jestli hra existuje, nastavi globalni promenne log a concepts
-def testGameName(game):
+
+# otestuje jestli hra existuje, nastavi globalni promenne log a concepts
+def test_game_name(game):
     global log
     global concepts
     if game == "tetris":
@@ -39,9 +39,10 @@ def testGameName(game):
     else:
         raise ValueError("Unknown game, use of one {'tetris', 'strilecka', 'roboti'}")
 
+
 # vraci dataframe pro casovou analyzu (bez prilis dlouhych casu)
 def logForTime(game):
-    testGameName(game)
+    test_game_name(game)
 
     pole = None
     low_time = 0
@@ -74,33 +75,43 @@ def logForTime(game):
     return log.loc[(log['gameLength'] > low_time) & (log['gameLength'] < high_time)]
 
 
-#kolik lidi se nedostalo pres prvni level
+# ze stackoverflow - nevim jestli muzu pouzit
+
+def mean_confidence_interval(data, confidence=0.95):
+    a = 1.0 * numpy.array(data)
+    n = len(a)
+    m, se = numpy.mean(a), st.sem(a)
+    h = se * st.t._ppf((1 + confidence) / 2., n - 1)
+    return m, m - h, m + h
+
+# kolik lidi se nedostalo pres prvni level
 def firstLevelLossers(game):
     users = logs_roboti.user.unique()
     u = 0
-    testGameName(game)
+    test_game_name(game)
 
     for user in users:
-        tmp= log.loc[(log['user']==user) & (log['level'] == 1)]
+        tmp = log.loc[(log['user'] == user) & (log['level'] == 1)]
         if game == "roboti":
             userConcepts = tmp.robotConcept.unique()
         else:
             userConcepts = tmp.concept.unique()
         for c in userConcepts:
             if game == "roboti":
-                local = tmp.loc[(tmp['robotConcept']==c), 'success'].tolist()
+                local = tmp.loc[(tmp['robotConcept'] == c), 'success'].tolist()
             else:
-                local = tmp.loc[(tmp['concept']== c), 'success'].tolist()
+                local = tmp.loc[(tmp['concept'] == c), 'success'].tolist()
             if 1 not in local:
                 u += 1
     return u
 
-#kolik uzivatelu se dostalo pres levely
-#NEDOKONCENE
+
+# kolik uzivatelu se dostalo pres levely
+# NEDOKONCENE
 def survivors(game):
-    sur = [0]* 11
-    restart = [0]*11
-    levels = [1,2,3,4,5,6,7,8,9,10]
+    sur = [0] * 11
+    restart = [0] * 11
+    levels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
     for level in levels:
         if game == "strilecka":
@@ -122,15 +133,16 @@ def survivors(game):
     plt.title(str(game) + " prezivsi")
     plt.plot(sur, '-b')
     plt.plot(restart, '-r')
-    plt.xticks(range(0,10))
+    plt.xticks(range(0, 10))
     plt.grid(True)
     plt.show()
 
-#survivors("tetris")
+
+survivors("roboti")
 
 
-#oblibenost conceptu, nepoci s pridanim konceptu pocita vsechny dohromady
-#DODELAT zavislost na testgame
+# oblibenost conceptu, nepoci s pridanim konceptu pocita vsechny dohromady
+# DODELAT zavislost na testgame
 def favConcepts(game):
     out = []
     if game == "strilecka":
@@ -145,19 +157,20 @@ def favConcepts(game):
     else:
         raise ValueError("Unknown game")
 
-    plt.bar(range(1,7), out, align='center')
-    plt.xticks(range(1,7))
+    plt.bar(range(1, 7), out, align='center')
+    plt.xticks(range(1, 7))
     plt.grid(True)
     plt.show()
 
-favConcepts("roboti")
 
-#prumerne chyby pro kazdy koncept
-#strilecka ma max 3 naboje- divne vysledky(chybne odpovedi moc ovlivnuji prumer)
+# favConcepts("roboti")
+
+# prumerne chyby pro kazdy koncept
+# strilecka ma max 3 naboje- divne vysledky(chybne odpovedi moc ovlivnuji prumer)
 def conceptMistakes(game):
-    testGameName(game)
+    test_game_name(game)
 
-    all_mistakes = sum(log.mistakes)/ float(len(log))
+    all_mistakes = sum(log.mistakes) / float(len(log))
 
     print "Kompletni prumer: " + str(all_mistakes)
 
@@ -165,59 +178,81 @@ def conceptMistakes(game):
         if game == "roboti":
             tmp = log.loc[log['robotConcept'] == concept, 'mistakes'].tolist()
         else:
-            tmp =log.loc[log['concept']== concept, 'mistakes'].tolist()
+            tmp = log.loc[log['concept'] == concept, 'mistakes'].tolist()
         sumMistakes = sum(tmp)
         length = len(tmp)
-        if length !=0:
-            avg = sumMistakes/float(length)
+        if length != 0:
+            avg = sumMistakes / float(length)
             print avg
         else:
             print 0
 
-#conceptMistakes("roboti")
+# conceptMistakes("roboti")
 
 
-#o kolik se zlepsili uzivatele pri druhem a dalsim pokusu
-#nejede - potrebuje moc casu
-#log je serazeny sestupne, potreba obratit pole
-#podivne vysledky - jeste zkontrolovat - slova se muzou v n opakovat NEDOKONCENE
-def loweringMistakes():
-    local_log = Util.roboti_shot_log
+# o kolik se zlepsili uzivatele pri druhem a dalsim pokusu
+# nejede - potrebuje moc casu
+# log je serazeny sestupne, potreba obratit pole
+# podivne vysledky - jeste zkontrolovat - slova se muzou v n opakovat NEDOKONCENE
+def loweringMistakes(lower_boundary, higher_boundary):
+    if lower_boundary > higher_boundary:
+        raise ValueError("higher boundarie is larger than lower")
+
+    local_log = Util.get_roboti_shot_log()
     log = local_log[['user', 'word']]
+
     lower = 0
     higher = 0
-    first_right = 0
-    first_wrong = 0
-    two_and_longer = 0
-    #print log
-    for n in range(122000,122900):
-        user = log.user.tolist()[n]
-        word = log.word.tolist()[n]
-        pole = local_log.loc[(local_log['user']== user)& (local_log['word']==word), 'correct'].tolist()[::-1]
+    same_wrong = 0
+    same_right = 0
+    exactly_two = 0
+    exactly_one = 0
+    more_than_two = 0
 
-        if len(pole)==2:
-            two_and_longer +=1
-            print two_and_longer
-            if (pole[0] == 1) & (pole[1]==0):
-                #print "ANO"
-                lower +=1
-            elif (pole[0] == 0) & (pole[1]==1):
-                higher +=1
+    users = log.user.tolist()
+    words = log.word.tolist()
+    frame = local_log.loc[lower_boundary: higher_boundary]
+
+    for n in range(lower_boundary, higher_boundary):
+        user = users[n]
+        word = words[n]
+        pole = frame.loc[(frame['user'] == user) & (frame['word'] == word), 'correct'].tolist()[::-1]
+
+        if len(pole) == 1:
+            exactly_one += 1
+        if len(pole) == 2:
+            exactly_two += 1
+            if (pole[0] == 1) & (pole[1] == 0):
+                lower += 1
+            elif (pole[0] == 0) & (pole[1] == 1):
+                higher += 1
+            elif (pole[0] == 0) & (pole[1] == 0):
+                same_wrong += 1
+            elif (pole[0] == 1) & (pole[1] == 1):
+                same_right += 1
+        if len(pole) > 2:
+            more_than_two += 1
 
     print lower
     print higher
-    print two_and_longer
-    #print local_log.loc[(local_log['user']==log.user.tolist[0]) & (local_log['word'] == log.word.tolist()[0])]
+    print same_wrong
+    print same_right
+    print exactly_two
+    print exactly_one
+    print more_than_two
+    # print local_log.loc[(local_log['user']==log.user.tolist[0]) & (local_log['word'] == log.word.tolist()[0])]
 
-loweringMistakes()
 
-#porovna chyby na stejnych levech v ruznych konceptech
-#nejde ruzne levely maji ruzne rychlosti a frekvence
+loweringMistakes(150000, 180000)
+
+# porovna chyby na stejnych levech v ruznych konceptech
+# nejde ruzne levely maji ruzne rychlosti a frekvence
 def sameLevelMistakes():
     pass
 
-#zjisti chybovost ve strilecce kde jsou texty delsi
-#max level  = 4 concept 7
+
+# zjisti chybovost ve strilecce kde jsou texty delsi
+# max level  = 4 concept 7
 def tooLong():
     for concept in strileckaConcepts:
         log = logs_strilecka.loc[logs_strilecka['concept'] == concept]
@@ -228,16 +263,18 @@ def tooLong():
             level_tries = len(log.loc[log['level'] == level])
             level_fail = log.loc[log['level'] == level, 'success'].tolist().count(0)
 
-            print "level:" + str(level) + ": " + str(level_tries) + ":" + str(level_fail) + " Pomer je: " + str(float(level_fail)/(level_tries-level_fail))
-#tooLong()
+            print "level:" + str(level) + ": " + str(level_tries) + ":" + str(level_fail) + " Pomer je: " + str(
+                float(level_fail) / (level_tries - level_fail))
 
-#porovna chybovost v ruznych konceptech ve strilecce.
 
-#porovna ruzne hry, pocet pokusu, prumerny straveny cas na uzivatele
-#NEDOKONCENE
+# tooLong()
+
+# porovna chybovost v ruznych konceptech ve strilecce.
+
+# porovna ruzne hry, pocet pokusu, prumerny straveny cas na uzivatele
+# NEDOKONCENE
 def triesPerGame(game):
-
-    testGameName(game)
+    test_game_name(game)
     users = log.user.unique()
     log_for_time = logForTime(game)
 
@@ -245,38 +282,41 @@ def triesPerGame(game):
     for user in users:
         allTimes.append(sum(log_for_time.loc[log['user'] == user, 'gameLength'].tolist()))
 
-    return numpy.mean(allTimes)
+    return numpy.mean(allTimes), numpy.median(allTimes)
 
-#triesPerGame("roboti")
+
+# triesPerGame("tetris")
 
 def number_of_users(game):
-    testGameName(game)
+    test_game_name(game)
 
     users = log.user.unique()
 
-    #print len(users) * triesPerGame(game)
+    # print len(users) * triesPerGame(game)
 
     print sum(log.gameLength.tolist())
 
-#number_of_users("strilecka")
-#number_of_users("tetris")
-#number_of_users("roboti")
 
-#pro kazdou hru zjisti kolik prumerne slov uzivatel procvici
-#pro roboty z robot shot log
-#pro strilecku z delky levelu (pouze uspesne)
-#pro tetris stejne jako pro strilecku
-#pocita jenom uspesne pokusy - nejde zjistit kolik slov videl neuspesny uzivatel
+# number_of_users("strilecka")
+# number_of_users("tetris")
+# number_of_users("roboti")
+
+# pro kazdou hru zjisti kolik prumerne slov uzivatel procvici
+# pro roboty z robot shot log
+# pro strilecku z delky levelu (pouze uspesne)
+# pro tetris stejne jako pro strilecku
+# pocita jenom uspesne pokusy - nejde zjistit kolik slov videl neuspesny uzivatel
 def number_of_practiced_words(game):
-    testGameName(game)
+    test_game_name(game)
     local_log = log.loc[log['success'] == 1]
 
     if game == "tetris":
         tetris_level_log = Util.tetris_level
         number_of_words = 0
 
-        for index,row in local_log.iterrows():
-            tmp = tetris_level_log.loc[(tetris_level_log['concept'] == row['concept']) & (tetris_level_log['level'] == row['level']), 'words'].tolist()
+        for index, row in local_log.iterrows():
+            tmp = tetris_level_log.loc[(tetris_level_log['concept'] == row['concept']) & (
+            tetris_level_log['level'] == row['level']), 'words'].tolist()
             string_tmp = ''.join(tmp)
 
             number_of_words += sum([int(s) for s in string_tmp.split(',') if s.isdigit()])
@@ -287,7 +327,8 @@ def number_of_practiced_words(game):
         strilecka_level = Util.strilecka_level
 
         for index, row in local_log.iterrows():
-            id = strilecka_level.loc[(strilecka_level['concept'] == row['concept']) & (strilecka_level['level'] == row['level']), 'id'].tolist()[0]
+            id = strilecka_level.loc[(strilecka_level['concept'] == row['concept']) & (
+            strilecka_level['level'] == row['level']), 'id'].tolist()[0]
             tmp = len(strilecka_level_log.loc[strilecka_level_log['level'] == id, 'word'].tolist())
             number_of_words += tmp
         print number_of_words
@@ -295,25 +336,27 @@ def number_of_practiced_words(game):
     if game == "roboti":
         pass
 
-#number_of_practiced_words("tetris")
-#zjisti nejtezsi slova pro kazdou hru(asi nepujde) - pujde pro roboty
-#slova maji jenom cisla
+
+# number_of_practiced_words("tetris")
+
+# zjisti nejtezsi slova pro kazdou hru(asi nepujde) - pujde pro roboty
+# slova maji jenom cisla
 def most_difficult_words():
-    local_log = Util.roboti_shot_log
+    local_log = Util.get_roboti_shot_log()
     words = local_log.word.unique()
     wrongs = []
 
     for word in words:
-        wrong = len(local_log.loc[(local_log['word'] == word)& (local_log['correct'] == 0)])
+        wrong = len(local_log.loc[(local_log['word'] == word) & (local_log['correct'] == 0)])
         wrongs.append(wrong)
 
-    d = dict(zip(words,wrongs))
+    d = dict(zip(words, wrongs))
     ordered = OrderedDict(sorted(d.items(), key=itemgetter(1)))
     print ordered
-#most_difficult_words()
-#print log.head()
-#print logForTime("roboti")
-#conceptMistakes("strilecka")
-#favConcepts("roboti")
-#survivors("strilecka")
-#tryNextLevel("strilecka")
+
+
+# most_difficult_words()
+
+# porovna hry oproti klasickym diktatum
+def compare_games_to_dictates():
+    pass
