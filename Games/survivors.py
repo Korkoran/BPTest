@@ -454,3 +454,7 @@ def returning_users(game):
     print len(second_month_users)
     print len(out)
 returning_users("strilecka")
+
+# zjisti kolik uzivatelu odpadne po mesici a kolik novych se jich prida
+def more_new_players():
+    pass
