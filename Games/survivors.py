@@ -4,12 +4,14 @@ import numpy
 from collections import OrderedDict
 from operator import itemgetter
 import scipy.stats as st
+import pandas as pd
 
 '''
 z logu nejde vycist jak hra vypada (jestli uzivatel zaplnil nektery sloupec tak, ze nesel dokoncit nebo
 skladal slova tak aby level dokoncil - mene slov nez mista) - doporucit tolik rad aby tohle neslo udelat
 u tetrisu generovat slova doprostred ne nahodne, nelze zjistit v jakem vzoru dela uzivatel chyby
 umoznit uzivatelum pokracovat v tom levelu kde skoncili
+vyradit z logu radky kde je moc chyb - roboti 20+
 '''
 logs_strilecka = Util.strilecka_session_log
 logs_roboti = Util.roboti_session_log
@@ -55,7 +57,7 @@ def logForTime(game):
 
     elif game == "tetris":
         pole = [0] * 1000
-        low_time = 1000
+        low_time = 3000
         high_time = 230000
 
     elif game == "roboti":
@@ -138,7 +140,7 @@ def survivors(game):
     plt.show()
 
 
-survivors("roboti")
+#survivors("roboti")
 
 
 # oblibenost conceptu, nepoci s pridanim konceptu pocita vsechny dohromady
@@ -179,6 +181,7 @@ def conceptMistakes(game):
             tmp = log.loc[log['robotConcept'] == concept, 'mistakes'].tolist()
         else:
             tmp = log.loc[log['concept'] == concept, 'mistakes'].tolist()
+        tmp = [i for i in tmp if i < 20]
         sumMistakes = sum(tmp)
         length = len(tmp)
         if length != 0:
@@ -243,7 +246,7 @@ def loweringMistakes(lower_boundary, higher_boundary):
     # print local_log.loc[(local_log['user']==log.user.tolist[0]) & (local_log['word'] == log.word.tolist()[0])]
 
 
-loweringMistakes(150000, 180000)
+# loweringMistakes(150000, 180000)
 
 # porovna chyby na stejnych levech v ruznych konceptech
 # nejde ruzne levely maji ruzne rychlosti a frekvence
@@ -315,8 +318,8 @@ def number_of_practiced_words(game):
         number_of_words = 0
 
         for index, row in local_log.iterrows():
-            tmp = tetris_level_log.loc[(tetris_level_log['concept'] == row['concept']) & (
-            tetris_level_log['level'] == row['level']), 'words'].tolist()
+            tmp = tetris_level_log.loc[(tetris_level_log['concept'] == row['concept']) &
+                                       (tetris_level_log['level'] == row['level']), 'words'].tolist()
             string_tmp = ''.join(tmp)
 
             number_of_words += sum([int(s) for s in string_tmp.split(',') if s.isdigit()])
@@ -327,8 +330,8 @@ def number_of_practiced_words(game):
         strilecka_level = Util.strilecka_level
 
         for index, row in local_log.iterrows():
-            id = strilecka_level.loc[(strilecka_level['concept'] == row['concept']) & (
-            strilecka_level['level'] == row['level']), 'id'].tolist()[0]
+            id = strilecka_level.loc[(strilecka_level['concept'] == row['concept']) &
+                                     (strilecka_level['level'] == row['level']), 'id'].tolist()[0]
             tmp = len(strilecka_level_log.loc[strilecka_level_log['level'] == id, 'word'].tolist())
             number_of_words += tmp
         print number_of_words
@@ -360,3 +363,94 @@ def most_difficult_words():
 # porovna hry oproti klasickym diktatum
 def compare_games_to_dictates():
     pass
+
+# zjisti kolik lidi vyzkousi vice nez jednu hru
+# zkontrolovat vraci prekvapive moc
+def try_more_games():
+    roboti_users = Util.roboti_session_log.user.unique()
+    tetris_users = Util.tetris_session_log.user.unique()
+    strilecka_users = Util.strilecka_session_log.user.unique()
+
+    print len(roboti_users)
+    print len(tetris_users)
+    print len(strilecka_users)
+    n1= set(roboti_users).intersection(tetris_users)
+    n2= set(tetris_users).intersection(strilecka_users)
+    n3 = set(roboti_users).intersection(strilecka_users)
+
+    print n1
+
+    celkem = len(set(n1).intersection(n2))
+    print len(n1)
+    print len(n2)
+    print len(n3)
+    print celkem
+
+# try_more_games()
+
+# vypise pole s pocty chyb na indexu
+def mistakes_test():
+    global log
+    log = Util.roboti_session_log
+    mistakes = [0]*200
+
+    for index, row in log.iterrows():
+        pozice = int(row['mistakes'])
+        if pozice >=0:
+            mistakes[pozice] +=1
+
+    print mistakes
+    values = numpy.array(mistakes)
+    searchval = 1
+    ii = numpy.where(values == searchval)[0]
+    print max(ii)
+    plt.plot(mistakes[0:25], 'r-')
+    plt.grid(True)
+    plt.show()
+# mistakes_test()
+
+# pro kazdy level(mozna to pouzit jako skore pro uzivatele)
+# vypocita podle nejake rovnice obtiznost levelu,
+# vytvori graf a porovna s grafem survivors
+def roboti_level_compare():
+    pass
+
+# porovna vraceni se ke hre k diktatum
+def returning_users(game):
+    test_game_name(game)
+    maximum = max(log.id.tolist())
+    print maximum
+    first_third = log.loc[log['id'] < maximum/3, 'user'].unique().tolist()
+    second_third = log.loc[log['id'] > maximum - maximum/3, 'user'].unique().tolist()
+
+    first_half = log.loc[log['id'] < maximum/2, 'user'].unique().tolist()
+    second_half = log.loc[log['id'] > maximum - maximum/2, 'user'].unique().tolist()
+    n1= set(first_third).intersection(second_third)
+    n2 = set(first_half).intersection(second_half)
+
+    print len(first_half)
+    print len(second_half)
+    print len(n2)
+
+    print len(first_third)
+    print len(second_third)
+    print len(n1)
+
+# returning_users("tetris")
+
+def returning_users(game):
+    test_game_name(game)
+    start_first = "2016-05-01"
+    end_first = "2016-06-01"
+    end_second = "2016-07-01"
+
+    first_month_users = log.loc[(log['time'] > pd.Timestamp(start_first)) &
+                                (log['time'] < pd.Timestamp(end_first)), 'user'].unique().tolist()
+    second_month_users = log.loc[(log['time'] > pd.Timestamp(end_first)) &
+                                 (log['time'] < pd.Timestamp(end_second)), 'user'].unique().tolist()
+
+    out = set(first_month_users).intersection(second_month_users)
+    print len(first_month_users)
+    print len(second_month_users)
+    print len(out)
+returning_users("strilecka")
