@@ -1,6 +1,7 @@
 import Util
 import matplotlib.pyplot as plt
 import numpy
+import math
 from collections import OrderedDict
 from operator import itemgetter
 import scipy.stats as st
@@ -83,10 +84,26 @@ def mean_confidence_interval(data, confidence=0.95):
     a = 1.0 * numpy.array(data)
     n = len(a)
     m, se = numpy.mean(a), st.sem(a)
+    print se
     h = se * st.t._ppf((1 + confidence) / 2., n - 1)
     return m, m - h, m + h
 
+# print mean_confidence_interval([10,15,16,20,32,45])
+
+
+def my_mean_interval(data):
+    confidence = 0.95
+    array = numpy.array(data)
+    n = len(array)
+    avg = numpy.mean(array)
+    standardError= st.sem(data)
+    return avg
+
+# print my_mean_interval([10,15,16,20,32,45])
+
 # kolik lidi se nedostalo pres prvni level
+
+
 def firstLevelLossers(game):
     users = logs_roboti.user.unique()
     u = 0
@@ -179,6 +196,7 @@ def conceptMistakes(game):
     for concept in concepts:
         if game == "roboti":
             tmp = log.loc[log['robotConcept'] == concept, 'mistakes'].tolist()
+            #uprava, koncepty v robotech jsou podkoncepty
         else:
             tmp = log.loc[log['concept'] == concept, 'mistakes'].tolist()
         tmp = [i for i in tmp if i < 20]
@@ -190,7 +208,7 @@ def conceptMistakes(game):
         else:
             print 0
 
-# conceptMistakes("roboti")
+conceptMistakes("roboti")
 
 
 # o kolik se zlepsili uzivatele pri druhem a dalsim pokusu
@@ -358,7 +376,7 @@ def most_difficult_words():
     print ordered
 
 
-# most_difficult_words()
+#most_difficult_words()
 
 # porovna hry oproti klasickym diktatum
 def compare_games_to_dictates():
@@ -453,8 +471,50 @@ def returning_users(game):
     print len(first_month_users)
     print len(second_month_users)
     print len(out)
-returning_users("strilecka")
+# returning_users("strilecka")
 
 # zjisti kolik uzivatelu odpadne po mesici a kolik novych se jich prida
 def more_new_players():
     pass
+
+# stejne jako pro survivors ale ukazuje graf pro kazdy koncept
+def survivors_for_concept(game, concept):
+    pass
+
+# graf pro chyby v konceptech
+# nemuzou se delat vsechny koncepty dohromady - maji ruznou delku
+# roboti maji v sobe nekolik konceptu
+def level_mistake_chance(game, concept):
+    test_game_name(game)
+
+    local_log = log.loc[log['robotConcept'] == concept]
+
+    levels = [1,2,3,4,5,6,7]
+    for level in levels:
+        level_log = local_log.loc[local_log['level'] == level]
+
+
+#  level_mistake_chance("roboti",1)
+
+# posledni vec pred opustenim
+def xed(game):
+    test_game_name(game)
+
+    users = log.user.unique().tolist()
+    zeros = 0
+    ones = 0
+    level = [0]*15
+
+    for user in users:
+        local_log = log.loc[log['user'] == user]
+        last_id = local_log.id.iget(-1)
+        tmp = local_log.loc[local_log['id'] == last_id]
+        level[tmp.level.tolist()[0]] +=1
+        if tmp.success.tolist()[0] == 1:
+            ones += 1
+        else:
+            zeros += 1
+    print zeros
+    print ones
+    print level # tohle vlastne nic nerika
+xed("strilecka")
