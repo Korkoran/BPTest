@@ -6,6 +6,7 @@ from collections import OrderedDict
 from operator import itemgetter
 import scipy.stats as st
 import pandas as pd
+from enum import Enum
 
 '''
 z logu nejde vycist jak hra vypada (jestli uzivatel zaplnil nektery sloupec tak, ze nesel dokoncit nebo
@@ -199,16 +200,16 @@ def conceptMistakes(game):
             #uprava, koncepty v robotech jsou podkoncepty
         else:
             tmp = log.loc[log['concept'] == concept, 'mistakes'].tolist()
-        tmp = [i for i in tmp if i < 20]
-        sumMistakes = sum(tmp)
-        length = len(tmp)
+        tmp2 = [i for i in tmp if i < 60]
+        sumMistakes = sum(tmp2)
+        length = len(tmp2)
         if length != 0:
             avg = sumMistakes / float(length)
             print avg
         else:
             print 0
 
-conceptMistakes("roboti")
+# conceptMistakes("roboti")
 
 
 # o kolik se zlepsili uzivatele pri druhem a dalsim pokusu
@@ -517,4 +518,82 @@ def xed(game):
     print zeros
     print ones
     print level # tohle vlastne nic nerika
-xed("strilecka")
+# xed("strilecka")
+
+def player_types(game):
+    test_game_name(game)
+
+    achievers = 0
+    explorers = 0
+    careless = 0
+    lost = 0
+
+    class_levels = []
+
+    class lvl:
+        id = 0
+        concept = 0
+        mistakes = 0
+        gameLength = 0
+
+    for concept in concepts:
+        l_log = log.loc[log['concept'] == concept]
+        levels = Util.tetris_level.loc[Util.tetris_level['concept'] == concept, 'level'].unique().tolist()
+        print levels
+
+        #nektere levely nemaji zadny zaznam, median vraci nan
+        for level in levels:
+            l = lvl()
+            level_tmp = l_log.loc[l_log['level'] == level, ['mistakes', 'gameLength']]
+            level_avg = numpy.mean(level_tmp.mistakes.tolist())
+            level_time = numpy.mean(level_tmp.gameLength.tolist())
+            # print level_tmp.mistakes.tolist()
+            l.id = level
+            l.concept = concept
+            l.mistakes = level_avg
+            l.gameLength = level_time
+            class_levels.append(l)
+
+    users = log.user.unique().tolist()
+    for user in users:
+        user_error_score = []
+        user_time_score = []
+        user_log = log.loc[(log['user'] == user) & log['success'] == 1]
+        if len(user_log) > 10:
+            for index, row in user_log.iterrows():
+                c = row['concept']
+                l = row['level']
+                m = row['mistakes']
+                t = row['gameLength']
+                # nejakou lepsi strukturu na vyhledavani
+                for class_level in class_levels:
+                    if class_level.id == l & class_level.concept == c:
+                        #mozne predelat, podle skutecne obtiznosti
+                        #upravit to co pridavam to pole (1, -1)
+                        if class_level.mistakes >= m:
+                            user_error_score.append(1)
+                        elif class_level.mistakes < m:
+                            user_error_score.append(-1)
+                        if class_level.gameLength >= t:
+                            user_time_score.append(1)
+                        elif class_level.gameLength < t:
+                            user_time_score.append(-1)
+                    else:
+                        continue
+            # print "errors: " + str(sum(user_error_score))
+            # print "time: " + str(sum(user_time_score))
+            if sum(user_error_score) > 0 and sum(user_time_score ) > 0:
+                achievers += 1
+            if sum(user_error_score) > 0 and sum(user_time_score) < 0:
+                explorers += 1
+            if sum(user_error_score) < 0 and sum(user_time_score) > 0:
+                careless += 1
+            if sum(user_error_score) < 0 and sum(user_time_score) < 0:
+                lost += 1
+
+    print achievers
+    print explorers
+    print careless
+    print lost
+# player_types("strilecka")
+
