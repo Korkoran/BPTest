@@ -6,6 +6,7 @@ from collections import OrderedDict
 from operator import itemgetter
 import scipy.stats as st
 import pandas as pd
+from datetime import datetime
 from enum import Enum
 
 '''
@@ -200,7 +201,7 @@ def conceptMistakes(game):
             #uprava, koncepty v robotech jsou podkoncepty
         else:
             tmp = log.loc[log['concept'] == concept, 'mistakes'].tolist()
-        tmp2 = [i for i in tmp if i < 60]
+        tmp2 = [i for i in tmp if i < 20]
         sumMistakes = sum(tmp2)
         length = len(tmp2)
         if length != 0:
@@ -209,7 +210,7 @@ def conceptMistakes(game):
         else:
             print 0
 
-# conceptMistakes("roboti")
+conceptMistakes("tetris")
 
 
 # o kolik se zlepsili uzivatele pri druhem a dalsim pokusu
@@ -416,15 +417,23 @@ def mistakes_test():
     for index, row in log.iterrows():
         pozice = int(row['mistakes'])
         if pozice >=0:
-            mistakes[pozice] +=1
+            if pozice >15:
+                mistakes[15] +=1
+            else:
+                mistakes[pozice] +=1
 
     print mistakes
+
+    #vyhleda vsechny jednicky v poli mistakes a vrati je jako pole (pro hledani nejvice chyb v logu)
     values = numpy.array(mistakes)
     searchval = 1
     ii = numpy.where(values == searchval)[0]
-    print max(ii)
-    plt.plot(mistakes[0:25], 'r-')
+    print ii
+
+    #plt.plot(mistakes[0:25], 'r-')
     plt.grid(True)
+    ticks = range(0,16)
+    plt.bar(ticks, mistakes[0:16])
     plt.show()
 # mistakes_test()
 
@@ -520,6 +529,7 @@ def xed(game):
     print level # tohle vlastne nic nerika
 # xed("strilecka")
 
+# nepouzivat prumer, ale seradit uzivatele a pouzit polovinu
 def player_types(game):
     test_game_name(game)
 
@@ -545,6 +555,7 @@ def player_types(game):
         for level in levels:
             l = lvl()
             level_tmp = l_log.loc[l_log['level'] == level, ['mistakes', 'gameLength']]
+            # zmenit, moc ovlinuje prumer
             level_avg = numpy.mean(level_tmp.mistakes.tolist())
             level_time = numpy.mean(level_tmp.gameLength.tolist())
             # print level_tmp.mistakes.tolist()
@@ -555,11 +566,12 @@ def player_types(game):
             class_levels.append(l)
 
     users = log.user.unique().tolist()
+    users_triple = []
     for user in users:
         user_error_score = []
         user_time_score = []
         user_log = log.loc[(log['user'] == user) & log['success'] == 1]
-        if len(user_log) > 10:
+        if len(user_log) > 5:
             for index, row in user_log.iterrows():
                 c = row['concept']
                 l = row['level']
@@ -581,7 +593,8 @@ def player_types(game):
                     else:
                         continue
             # print "errors: " + str(sum(user_error_score))
-            # print "time: " + str(sum(user_time_score))
+
+            '''# print "time: " + str(sum(user_time_score))
             if sum(user_error_score) > 0 and sum(user_time_score ) > 0:
                 achievers += 1
             if sum(user_error_score) > 0 and sum(user_time_score) < 0:
@@ -590,10 +603,86 @@ def player_types(game):
                 careless += 1
             if sum(user_error_score) < 0 and sum(user_time_score) < 0:
                 lost += 1
-
+            '''
+            users_triple.append((user, sum(user_time_score), sum(user_error_score)))
+    sorted_by_score = sorted(users_triple, key=lambda tup: tup[1])
+    sorted_by_time = sorted(users_triple, key=lambda tup: tup[2])
+    #print numpy.median(dict(sorted_by_score[0:1]).values())
+    print sorted_by_score[1][1]
+    print sorted_by_time
     print achievers
     print explorers
     print careless
     print lost
-# player_types("strilecka")
+    #print users_triple
+# player_types("tetris")
 
+#jak dlouho trva uspesne dokonceni pro kazdy lvl a koncept
+#oddelat prilis dlouhe casy
+def finnish_time(game, concept):
+    test_game_name(game)
+    local_log = log.loc[(log['concept'] == concept) & log['success'] == 0]
+    levels = local_log.level.unique().tolist()
+    print "Concept number: " + str(concept)
+    for level in levels:
+        print " level number: ",
+        tmp = local_log.loc[local_log['level'] == level]
+        if len(tmp)>50:
+            numbers = tmp.gameLength.tolist()
+            print "len numbers: " + str(len(numbers))
+            deviation = Util.standard_deviation(numbers)
+            print " deviation is : " + str(deviation)
+            avg = numpy.mean(numbers)
+            out = []
+            for number in numbers:
+                if number < avg and number + deviation > avg:
+                    out.append(number)
+                if number > avg and number - deviation < avg:
+                    out.append(number)
+
+            #print numpy.mean(tmp.gameLength.tolist())
+            print " len out: " + str(len(out))
+            print numpy.mean(out)
+        else:
+            print 0
+    #print local_log
+
+finnish_time("tetris", 1)
+'''
+dulezite !!! jak zachazet s timestamp !!
+log = Util.strilecka_session_log.time
+print log[0].day
+level number:  63939.5430218
+ level number:  95335.8338915
+ level number:  67187.0272937
+ level number:  75154.3880107
+ level number:  70720.5844156
+ level number:  65404.5531197
+ level number:  98936.0
+ level number:  0.0
+'''
+log = Util.strilecka_session_log
+
+first = log.time
+print type(first)
+
+second = first[0].day
+third = first[0].month
+forth = first[0].second
+
+print first[0]
+print forth
+for index, row in log.iterrows():
+    l = row['time']
+    if l.day == second and l.month == third:
+        pass
+
+pole = [2,8,9,10,8,9,7,11,12,9,8,7,22]
+dev = Util.standard_deviation(pole)
+prumer = numpy.mean(pole)
+for p in pole:
+    if p<prumer and prumer-dev > p:
+        print p
+    if p > prumer and prumer+dev < p:
+        print p
+print Util.standard_deviation(pole)

@@ -2,6 +2,8 @@ import pandas as pd
 import re
 import collections
 import os.path
+import numpy
+import math
 
 current_dir = os.getcwd()
 parent = os.path.split(current_dir)
@@ -34,6 +36,21 @@ class strilecka:
     def __repr__(self):
         return '\n\n STRILECKA LEVEL\nId: ' + str(self.id)+ '\nConcept: '\
                + str(self.concept) + '\nWords: ' + str(self.words) + '\nLevel: ' + str(self.level)
+
+#vypocita standardni odchylku pole
+def standard_deviation(array_of_numbers):
+    if len(array_of_numbers) < 2:
+        raise ValueError("Array is too small")
+
+    tmp = 0
+    avg = numpy.mean(array_of_numbers)
+
+    for number in array_of_numbers:
+        tmp += math.pow(number - avg, 2)
+
+    out = tmp / len(array_of_numbers)
+
+    return math.sqrt(out)
 
 def get_strilecka_level(id):
     s = strilecka()
