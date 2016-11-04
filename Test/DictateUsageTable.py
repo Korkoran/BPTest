@@ -20,7 +20,7 @@ for d in diktaty:
     diktat.append(str(d.concept))
     diktat.append(str("%.1f " % d.mistakes + '%'))
     diktat.append(str("%.1f " % Util.realConceptMistakes(d.concept) + '%'))
-    if d.mistakes > Util.realConceptMistakes(d.concept) +4:
+    if d.mistakes > Util.realConceptMistakes(d.concept) + 4:
         diff.append(diktat)
     if d.mistakes + 4 < Util.realConceptMistakes(d.concept):
         diff.append(diktat)

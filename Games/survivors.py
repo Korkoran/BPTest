@@ -1,6 +1,7 @@
 import Util
 import matplotlib.pyplot as plt
 import numpy
+import Test.Util as test_Util
 import math
 from collections import OrderedDict
 from operator import itemgetter
@@ -86,7 +87,6 @@ def mean_confidence_interval(data, confidence=0.95):
     a = 1.0 * numpy.array(data)
     n = len(a)
     m, se = numpy.mean(a), st.sem(a)
-    print se
     h = se * st.t._ppf((1 + confidence) / 2., n - 1)
     return m, m - h, m + h
 
@@ -210,7 +210,7 @@ def conceptMistakes(game):
         else:
             print 0
 
-conceptMistakes("tetris")
+# conceptMistakes("tetris")
 
 
 # o kolik se zlepsili uzivatele pri druhem a dalsim pokusu
@@ -378,12 +378,106 @@ def most_difficult_words():
     print ordered
 
 
-#most_difficult_words()
+# most_difficult_words()
 
 # porovna hry oproti klasickym diktatum
-def compare_games_to_dictates():
-    pass
+# NEDOKONCENE
+def compare_games_to_dictates_practiced_words(game):
+    game_users = []
+    dicat_users = []
+    if game == "roboti":
+        game_loc = Util.roboti_session_log
+        game_tmp = Util.roboti_session_log.user.unique()
 
+    if game == "tetris":
+        game_loc = Util.tetris_session_log
+        game_tmp = Util.tetris_session_log.user.unique()
+
+    if game == "strilecka":
+        game_loc = Util.strilecka_session_log
+        game_tmp = Util.strilecka_session_log.user.unique()
+    dictat_log = test_Util.dictateSession
+
+    dictat_tmp = test_Util.dictateSession.user.unique()
+    for u in game_tmp:
+        if len(game_loc.loc[game_loc['user'] == u]) > 5:
+            game_users.append(u)
+    for v in dictat_tmp:
+        if len(dictat_log.loc[dictat_log['user'] == v]) > 5:
+            dicat_users.append(v)
+
+    dictat_time = 0
+    game_time = 0
+    for user in dicat_users:
+        dictat_time +=sum(dictat_log.loc[dictat_log['user'] == user, 'gameLength'].tolist())
+    for user in game_users:
+        game_time += sum(game_loc.loc[game_loc['user'] == user, 'gameLength'].tolist())
+    print len(game_users)
+    print game_time / len(game_users)
+    print len(dicat_users)
+    print dictat_time / len(dicat_users)
+
+    dictat_words = []
+    for user in dicat_users:
+        words = 0
+        diktaty = str(dictat_log.loc[dictat_log['user'] == user, 'answers'].tolist())
+        for diktat in diktaty:
+            words += len(diktat)
+        dictat_words.append(words)
+
+    print numpy.mean(dictat_words)
+    print numpy.median(dictat_words)
+    print mean_confidence_interval(dictat_words)
+
+    game_words = []
+    if game == "roboti":
+        shot_log = Util.get_roboti_shot_log()
+        for user in game_users:
+            game_words.append(len(shot_log.loc[shot_log['user'] == user]))
+        print game_words
+        print numpy.mean(game_words)
+        print numpy.median(game_words)
+
+    if game == "strilecka":
+        total = []
+        strilecka_level_log = Util.strilecka_level_word
+        strilecka_level = Util.strilecka_level
+
+        for user in game_users:
+            number_of_words = 0
+            tmp = game_loc.loc[game_loc['user'] == user]
+            for index, row in tmp.iterrows():
+                id = strilecka_level.loc[(strilecka_level['concept'] == row['concept']) &
+                                     (strilecka_level['level'] == row['level']), 'id'].tolist()[0]
+                tmp = len(strilecka_level_log.loc[strilecka_level_log['level'] == id, 'word'].tolist())
+                if row['success'] == 1:
+                    number_of_words += tmp
+                else:
+                    number_of_words += tmp / 3
+            total.append(number_of_words)
+        print numpy.mean(total)
+        print numpy.median(total)
+
+    if game == "tetris":
+        tetris_level_log = Util.tetris_level
+
+        total = []
+        for user in game_users:
+            number_of_words = 0
+            tmp = game_loc.loc[game_loc['user'] == user]
+            for index, row in tmp.iterrows():
+                n = tetris_level_log.loc[(tetris_level_log['concept'] == row['concept']) &
+                                         (tetris_level_log['level'] == row['level']), 'words'].tolist()
+                string_tmp = ''.join(n)
+                if row['success'] == 1:
+                    number_of_words += sum([int(s) for s in string_tmp.split(',') if s.isdigit()])
+                else:
+                    number_of_words += sum([int(s) for s in string_tmp.split(',') if s.isdigit()])/2
+            total.append(number_of_words)
+        print numpy.mean(total)
+        print numpy.median(total)
+
+compare_games_to_dictates_practiced_words("strilecka")
 # zjisti kolik lidi vyzkousi vice nez jednu hru
 # zkontrolovat vraci prekvapive moc
 def try_more_games():
@@ -444,6 +538,7 @@ def roboti_level_compare():
     pass
 
 # porovna vraceni se ke hre k diktatum
+# NEDOKONCENE
 def returning_users(game):
     test_game_name(game)
     maximum = max(log.id.tolist())
@@ -647,7 +742,7 @@ def finnish_time(game, concept):
             print 0
     #print local_log
 
-finnish_time("tetris", 1)
+# finnish_time("tetris", 1)
 '''
 dulezite !!! jak zachazet s timestamp !!
 log = Util.strilecka_session_log.time
@@ -664,14 +759,14 @@ level number:  63939.5430218
 log = Util.strilecka_session_log
 
 first = log.time
-print type(first)
+#print type(first)
 
 second = first[0].day
 third = first[0].month
 forth = first[0].second
 
-print first[0]
-print forth
+#print first[0]
+#print forth
 for index, row in log.iterrows():
     l = row['time']
     if l.day == second and l.month == third:
@@ -682,7 +777,9 @@ dev = Util.standard_deviation(pole)
 prumer = numpy.mean(pole)
 for p in pole:
     if p<prumer and prumer-dev > p:
-        print p
+        #print p
+        pass
     if p > prumer and prumer+dev < p:
-        print p
-print Util.standard_deviation(pole)
+        #print p
+        pass
+#print Util.standard_deviation(pole)

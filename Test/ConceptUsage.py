@@ -75,10 +75,7 @@ def conceptUsage():
     #na prvni pozici je 0
     conceptList.pop(0)
     return conceptList
-
-
-
-
+# conceptUsage()
 '''
 Zjisti v jakem konceptu travi uzivatele nejvic casu, s ohledem na ruzne delky diktatu (podle casu na odpoved)
 
@@ -90,7 +87,10 @@ def game_length_per_concept():
     for concept in concepts:
         conceptTmp = []
         for diktat in concept.dictates:
-            tmp = session.loc[session['dictate'] == diktat.id, 'gameLength']
+            tmp = session.loc[session['dictate'] == diktat.id, 'gameLength'].tolist()
+            for i in range(len(tmp)):
+                if tmp[i] > 180000:
+                    tmp[i] = 180000
             neco = sum(tmp)/len(tmp)
             #print 'diktat cislo: ' + str(diktat.id) + ' game Length: '+ str(neco) + ' cas na odpoved: ' + str(neco/len(diktat.answers))
             conceptTmp.append(neco/len(diktat.answers))
@@ -112,7 +112,7 @@ def game_length_per_concept():
             #yerr = [1,1,1,1,0,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22],
             color='b')
     plt.show()
-
+# game_length_per_concept()
 
 def words_with_most_mistakes():
     diktaty = Util.getAllDictates()

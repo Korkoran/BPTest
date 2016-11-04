@@ -75,13 +75,13 @@ for t in tmp3:
     length3.append(len(t.answers))
     tries3.append(t.tries)
 '''
-fit1 = np.polyfit(length1,tries1,1)
+fit1 = np.polyfit(length1,tries1,2)
 fit_fn1 = np.poly1d(fit1)
 
-fit2 = np.polyfit(length2,tries2,1)
+fit2 = np.polyfit(length2,tries2,2)
 fit_fn2 = np.poly1d(fit2)
 
-fit3 = np.polyfit(length3,tries3,1)
+fit3 = np.polyfit(length3,tries3,2)
 fit_fn3 = np.poly1d(fit3)
 
 print tries1

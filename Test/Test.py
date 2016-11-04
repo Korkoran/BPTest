@@ -10,7 +10,7 @@ import Util
 vystup = Util.getDictateSession()
 averages = []
 tries = []
-print vystup.head()
+yerr = []
 
 #Zkusit stahnout novou verzi dictatesession a pridat 5,6
 concepts = Util.CONCEPTS
@@ -18,32 +18,24 @@ for concept in concepts:
     if float(len(vystup.loc[vystup['concept'] == concept])) == 0.0:
 
         averages.append(0)
+        yerr.append(0)
     else:
-        print "!!!!!!!!" + str(float(len(vystup.loc[vystup['concept'] == concept])))
-        averages.append(vystup.loc[vystup['concept'] == concept, 'mistakes'].sum() / float(len(vystup.loc[vystup['concept'] == concept])))
+        tmp = vystup.loc[vystup['concept'] == concept, 'mistakes'].sum() / float(len(vystup.loc[vystup['concept'] == concept]))
+        print tmp
+        averages.append(tmp)
+        yerr.append(tmp - Util.mean_confidence_interval(vystup.loc[vystup['concept'] == concept, 'mistakes'].tolist())[1])
 
     tries.append(len(vystup.loc[vystup['concept'] == concept]))
-    print ("Concept number: "+str(concept) +"  Avarage mistakes: "
-           + str(vystup.loc[vystup['concept'] == concept, 'mistakes'].sum() / len(vystup.loc[vystup['concept'] == concept]))
-           + " Number of tries: " + str(len(vystup.loc[vystup['concept'] == concept]))
-           + " Avarage time spent: " + str(vystup.loc[vystup['concept'] == concept, 'gameLength'].sum() / len(vystup.loc[vystup['concept'] == concept])))
 
-print vystup.loc[vystup['user'] == 172838, 'mistakes'].sum()
-
+print len(yerr)
+print len(averages)
 #vystup['tries'] = tries
 
-print vystup
 
 absoluteAverageTime = (vystup['gameLength']).sum() / float(len(vystup))
 absoluteMistakes = (vystup['mistakes']).sum() / float(len(vystup))
 
-print "Absolute average time is: " + str(absoluteAverageTime)
-print "Absolute average mistakes is: " + str(absoluteMistakes)
-print len(vystup)
-#neco = vystup.loc[vystup['concept'] == 1, 'mistakes'].sum() / float(len(vystup.loc[vystup['concept'] == 1]))
-print vystup.loc[vystup['concept'] == 1, 'mistakes'].sum() / float(len(vystup.loc[vystup['concept'] == 1]))
-print (vystup['mistakes']).sum()
-print averages
+
 def getAverages():
     return averages
 
@@ -51,7 +43,7 @@ concepts2 = [str(i) for i in concepts]
 vystu = averages
 numConcept = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]
 hist = ['1','1','1','1','2','2','3','3','3','4','4','7','7','7','9','9','10','10','10','11','11','12','12','12','13','13','13','14','14','15','15','16','16','16','17','17','17','18','18','18','18','18']
-print tries
+
 #plt.plot(concepts, neco, 'ro')
 #plt.xticks(concepts)
 #plt.margins(0.5)
@@ -60,10 +52,10 @@ plt.ylabel('average mistakes')
 #plt.hist(hist, bins = concepts, facecolor = 'green')
 #plt.xticks(concepts)
 plt.grid(True)
-
 plt.bar(numConcept,
         vystu,
         align='center',
+        yerr = yerr,
         #yerr = [0.2,1,1,1,1,0,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22],
         color = 'g')
 #plt.bar(numConcept, tries, align='center', color='red')

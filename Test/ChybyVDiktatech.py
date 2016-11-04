@@ -28,8 +28,8 @@ def getMistakes():
 
 
 
-plt.bar(dictId, mistakes)
-plt.show()
+# plt.bar(dictId, mistakes)
+# plt.show()
 
 concepts = Util.getAllConcepts()
 
@@ -41,6 +41,8 @@ for concept in concepts:
         out_dict_mistakes.append(dictate.mistakes)
 
 plt.plot(out_conc_numbers, out_dict_mistakes, 'ro')
+plt.xlabel("Koncepty")
+plt.ylabel("Diktaty")
 plt.grid(True)
 plt.xticks(range(0,26), range(0,26))
 plt.show()

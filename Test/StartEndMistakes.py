@@ -31,3 +31,8 @@ for i in range(94,95):
     print sum(first) / float(sum(second))
 
 
+def newOne():
+    for d in dictates:
+        words = Util.getMostWrongWords(d.id).values()
+        print words
+newOne()

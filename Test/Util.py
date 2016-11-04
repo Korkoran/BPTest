@@ -2,6 +2,9 @@ import pandas as pd
 import re
 import collections
 import os.path
+import math
+import numpy
+import scipy.stats as st
 
 current_dir = os.getcwd()
 parent = os.path.split(current_dir)
@@ -93,7 +96,8 @@ def getDictat(dictId):
     d.length = len(dictText)
     d.concept = tmp.concept.values[0]
     if len(search)!= 0:
-        d.mistakes = (search.mistakes.sum() / float(len(search)))/len(d.answers)*100
+        #d.mistakes = (search.mistakes.sum() / float(len(search)))/len(d.answers)*100
+        d.mistakes = search.mistakes.sum() / float(len(search))
     else:
         d.mistakes = 0
     d.concentration = d.length / float(len(d.answers))
@@ -215,6 +219,12 @@ neco = getDictat(95)
 def getNextDateTimeFrame(time):
     return dictateSession.loc[dictateSession['time']>pd.Timestamp(time), 'id'].tolist()[0]
 
+
+def proportionConfidenceInterval(trials, events):
+    pi_with_roof = events / float(trials)
+    z = 1.96
+    return (pi_with_roof - z * (math.sqrt(pi_with_roof * (1 - pi_with_roof)/trials))
+            , pi_with_roof + z * (math.sqrt(pi_with_roof * (1 - pi_with_roof)/trials)))
 #predelat na nejakou normalni formu, overit jestli to sedi, zjistit cisla radku v logu
 #nektere chyby jsou zasahy admina
 def logError(dictId):
@@ -224,6 +234,30 @@ def logError(dictId):
         if len(n) !=len(getDictat(dictId).answers):
             print 'delka ma byt: ' + str(len(getDictat(dictId).answers))+ ' ale je: '+ str(len(n)) + ' chybna data: '+ str(n)
 
+#vypocita standardni odchylku pole
+def standard_deviation(array_of_numbers):
+    if len(array_of_numbers) < 2:
+        raise ValueError("Array is too small")
+
+    tmp = 0
+    avg = numpy.mean(array_of_numbers)
+
+    for number in array_of_numbers:
+        tmp += math.pow(number - avg, 2)
+
+    out = tmp / len(array_of_numbers)
+
+    return math.sqrt(out)
+
+# ze stackoverflow - nevim jestli muzu pouzit
+
+def mean_confidence_interval(data, confidence=0.95):
+    a = 1.0 * numpy.array(data)
+    n = len(a)
+    m, se = numpy.mean(a), st.sem(a)
+    print se
+    h = se * st.t._ppf((1 + confidence) / 2., n - 1)
+    return m, m - h, m + h
 '''tmp = getAllDictates()
 for t in tmp:
     logError(t.id)
@@ -245,4 +279,5 @@ print getMostWrongWords(108).values()
 print getMostWrongWords(109).values()
 print getMostWrongWords(110).values()'''
 print '[' + ','.join("'" + str(x) + "'" for x in getDictat(105).answers) + ']'
-print getConcept(4)
+# print getConcept(4)
+print proportionConfidenceInterval(160,24)

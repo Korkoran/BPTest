@@ -26,6 +26,6 @@ flier_high = data[len(data)/4]
 flier_low = data[len(data)-(len(data)/4)]
 
 
-plt.boxplot([1,2,3,4,5,6], showfliers=True)
+plt.boxplot([1,2,3,4,5,6,5,5,5,5,5,5,5,5,6,6,6,6,6,7,8,9], showfliers=True)
 plt.show()
 
