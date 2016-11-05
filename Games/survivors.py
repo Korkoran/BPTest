@@ -151,15 +151,17 @@ def survivors(game):
     print restart[1:]
     print sur
 
-    plt.title(str(game) + " prezivsi")
+    plt.title(str(game))
     plt.plot(sur, '-b')
     plt.plot(restart, '-r')
+    plt.xlabel("Level")
+    plt.ylabel("Pocet uzivatelu")
     plt.xticks(range(0, 10))
     plt.grid(True)
     plt.show()
 
 
-#survivors("roboti")
+# survivors("roboti")
 
 
 # oblibenost conceptu, nepoci s pridanim konceptu pocita vsechny dohromady
@@ -217,7 +219,7 @@ def conceptMistakes(game):
 # nejede - potrebuje moc casu
 # log je serazeny sestupne, potreba obratit pole
 # podivne vysledky - jeste zkontrolovat - slova se muzou v n opakovat NEDOKONCENE
-def loweringMistakes(lower_boundary, higher_boundary):
+def lowering_mistakes_roboti(lower_boundary, higher_boundary):
     if lower_boundary > higher_boundary:
         raise ValueError("higher boundarie is larger than lower")
 
@@ -256,6 +258,7 @@ def loweringMistakes(lower_boundary, higher_boundary):
         if len(pole) > 2:
             more_than_two += 1
 
+
     print lower
     print higher
     print same_wrong
@@ -263,11 +266,130 @@ def loweringMistakes(lower_boundary, higher_boundary):
     print exactly_two
     print exactly_one
     print more_than_two
+
+    return (lower, higher, same_wrong,same_right)
     # print local_log.loc[(local_log['user']==log.user.tolist[0]) & (local_log['word'] == log.word.tolist()[0])]
 
+# print lowering_mistakes_roboti(210000, 220000)
+def low_mistakes():
+    pole = []
+    base = 200000
+    for i in range(6):
+        pole.append(lowering_mistakes_roboti(base, base + 10000))
+        base = base + 10000
+    print pole
 
-# loweringMistakes(150000, 180000)
+    all_worse = []
+    all_better = []
+    for i in pole:
+        all_t = i[0] + i[1] + i[2] + i[3]
+        worse = i[0] / float(all_t)
+        better = i[1] / float(all_t)
+        all_worse.append(worse)
+        all_better.append(better)
+    print numpy.mean(all_better)
+    print numpy.mean(all_worse)
 
+def lowering_mistakes_strilecka(lower_boundary, higher_boundary):
+    users = logs_strilecka.user.unique()
+    lower = 0
+    higher = 0
+    same =0
+    same_wrong = 0
+    exactly_two = 0
+    exactly_one = 0
+    more_than_two = 0
+    for user in users:
+        tmp = logs_strilecka.loc[(logs_strilecka['user'] == user) & (logs_strilecka['time'] > lower_boundary) & (logs_strilecka['time'] <= higher_boundary)]
+        if len(tmp) > 5:
+            tuples = []
+            for index,row in tmp.iterrows():
+                tuples.append((row['concept'], row['level']))
+            #print tuples
+            myset = set(tuples)
+            added = []
+            for tup in myset:
+                if tuples.count(tup) > 2:
+                    added.append(tup)
+            for d in added:
+                '''log = Util.strilecka_session_log.time
+                print log[0].day'''
+
+                first = tmp.loc[(tmp['concept'] == d[0]) & (tmp['level'] == d[1]), 'mistakes'].tolist()
+
+                if first[0] > first[1]:
+                    lower += 1
+                if first[0] < first[1]:
+                    higher +=1
+                if first[0] == first[1]:
+                    same +=1
+                if first[0] == 3 and first[1] == 3:
+                    same_wrong +=1
+
+    print lower
+    print higher
+    print same
+    print same_wrong
+    print higher / float(lower + higher + same)
+'''
+lowering_mistakes_strilecka("2016-06-01" , "2016-06-15")
+lowering_mistakes_strilecka("2016-06-16" , "2016-06-30")
+
+lowering_mistakes_strilecka("2016-09-01" , "2016-09-15")
+lowering_mistakes_strilecka("2016-09-16" , "2016-09-30")
+
+lowering_mistakes_strilecka("2016-10-01" , "2016-10-15")
+lowering_mistakes_strilecka("2016-10-16" , "2016-10-30")'''
+
+def lowering_mistakes_tetris(lower_boundary,higher_boundary):
+
+    users = logs_tetris.user.unique()
+
+    lower = 0
+    higher = 0
+    same =0
+
+    for user in users:
+        tmp = logs_tetris.loc[(logs_tetris['user'] == user) & (logs_tetris['time'] > lower_boundary) & (logs_tetris['time'] <= higher_boundary)]
+        if len(tmp) > 5:
+            tuples = []
+            for index,row in tmp.iterrows():
+                tuples.append((row['concept'], row['level']))
+            #print tuples
+            myset = set(tuples)
+            added = []
+            for tup in myset:
+                if tuples.count(tup) > 2:
+                    added.append(tup)
+            for d in added:
+                '''log = Util.strilecka_session_log.time
+                print log[0].day'''
+
+                first = tmp.loc[(tmp['concept'] == d[0]) & (tmp['level'] == d[1]), 'mistakes'].tolist()
+
+                if first[0] > first[1]:
+                    lower += 1
+                if first[0] < first[1]:
+                    higher +=1
+                if first[0] == first[1]:
+                    same +=1
+    print lower
+    print higher
+    print same
+    print lower / float(lower+higher+same)
+    print higher / float(lower+higher+same)
+'''
+lowering_mistakes_tetris("2016-06-01" , "2016-06-15")
+lowering_mistakes_tetris("2016-06-16" , "2016-06-30")
+
+lowering_mistakes_tetris("2016-09-01" , "2016-09-15")
+lowering_mistakes_tetris("2016-09-16" , "2016-09-30")
+
+lowering_mistakes_tetris("2016-10-01" , "2016-10-15")
+lowering_mistakes_tetris("2016-10-16" , "2016-10-30")
+'''
+#print test_Util.proportionConfidenceInterval(all_t, worse)
+#low_mistakes()
 # porovna chyby na stejnych levech v ruznych konceptech
 # nejde ruzne levely maji ruzne rychlosti a frekvence
 def sameLevelMistakes():
@@ -409,7 +531,11 @@ def compare_games_to_dictates_practiced_words(game):
     dictat_time = 0
     game_time = 0
     for user in dicat_users:
-        dictat_time +=sum(dictat_log.loc[dictat_log['user'] == user, 'gameLength'].tolist())
+        time = dictat_log.loc[dictat_log['user'] == user, 'gameLength'].tolist()
+        for t in range(len(time)):
+            if time[t] > 300000:
+                time[t] = 300000
+        dictat_time += sum(time)
     for user in game_users:
         game_time += sum(game_loc.loc[game_loc['user'] == user, 'gameLength'].tolist())
     print len(game_users)
@@ -477,7 +603,7 @@ def compare_games_to_dictates_practiced_words(game):
         print numpy.mean(total)
         print numpy.median(total)
 
-compare_games_to_dictates_practiced_words("strilecka")
+# compare_games_to_dictates_practiced_words("roboti")
 # zjisti kolik lidi vyzkousi vice nez jednu hru
 # zkontrolovat vraci prekvapive moc
 def try_more_games():
@@ -628,10 +754,10 @@ def xed(game):
 def player_types(game):
     test_game_name(game)
 
-    achievers = 0
-    explorers = 0
-    careless = 0
-    lost = 0
+    achievers = []
+    explorers = []
+    careless = []
+    lost = []
 
     class_levels = []
 
@@ -651,8 +777,18 @@ def player_types(game):
             l = lvl()
             level_tmp = l_log.loc[l_log['level'] == level, ['mistakes', 'gameLength']]
             # zmenit, moc ovlinuje prumer
-            level_avg = numpy.mean(level_tmp.mistakes.tolist())
-            level_time = numpy.mean(level_tmp.gameLength.tolist())
+            last_10m = len(level_tmp.mistakes.tolist()) / 10
+            last_10g = len(level_tmp.gameLength.tolist()) / 10
+            mistakes_list = level_tmp.mistakes.tolist()
+            mistakes_list.sort()
+            for i in range(last_10m):
+                mistakes_list.pop()
+            gameLength_list = level_tmp.gameLength.tolist()
+            gameLength_list.sort()
+            for j in range(last_10g):
+                gameLength_list.pop()
+            level_avg = numpy.mean(mistakes_list)
+            level_time = numpy.mean(gameLength_list)
             # print level_tmp.mistakes.tolist()
             l.id = level
             l.concept = concept
@@ -666,7 +802,7 @@ def player_types(game):
         user_error_score = []
         user_time_score = []
         user_log = log.loc[(log['user'] == user) & log['success'] == 1]
-        if len(user_log) > 5:
+        if len(user_log) > 2:
             for index, row in user_log.iterrows():
                 c = row['concept']
                 l = row['level']
@@ -702,13 +838,25 @@ def player_types(game):
             users_triple.append((user, sum(user_time_score), sum(user_error_score)))
     sorted_by_score = sorted(users_triple, key=lambda tup: tup[1])
     sorted_by_time = sorted(users_triple, key=lambda tup: tup[2])
+    med_score = numpy.median([x[1] for x in sorted_by_score])
+    med_time = numpy.median([x[2] for x in sorted_by_time])
+    print med_score
+    print med_time
+    for user in users_triple:
+        if user[1] > med_time and user[2] > med_score:
+            achievers.append(user[0])
+        if user[1] > med_time and user[2] < med_score:
+            explorers.append(user[0])
+        if user[1] < med_time and user[2] > med_score:
+            careless.append(user[0])
+        if user[1] < med_time and user[2] < med_score:
+            lost.append(user[0])
     #print numpy.median(dict(sorted_by_score[0:1]).values())
-    print sorted_by_score[1][1]
-    print sorted_by_time
-    print achievers
-    print explorers
-    print careless
-    print lost
+    print sorted_by_score
+    print len(achievers)
+    print len(explorers)
+    print len(careless)
+    print len(lost)
     #print users_triple
 # player_types("tetris")
 
@@ -773,6 +921,8 @@ for index, row in log.iterrows():
         pass
 
 pole = [2,8,9,10,8,9,7,11,12,9,8,7,22]
+pole.sort()
+print pole
 dev = Util.standard_deviation(pole)
 prumer = numpy.mean(pole)
 for p in pole:
@@ -783,3 +933,5 @@ for p in pole:
         #print p
         pass
 #print Util.standard_deviation(pole)
+#print max(test_Util.dictateSession.gameLength.tolist())
+

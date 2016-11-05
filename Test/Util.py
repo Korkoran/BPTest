@@ -97,7 +97,7 @@ def getDictat(dictId):
     d.concept = tmp.concept.values[0]
     if len(search)!= 0:
         #d.mistakes = (search.mistakes.sum() / float(len(search)))/len(d.answers)*100
-        d.mistakes = search.mistakes.sum() / float(len(search))
+        d.mistakes = search.mistakes.sum() / float(len(search)) / len(d.answers)
     else:
         d.mistakes = 0
     d.concentration = d.length / float(len(d.answers))

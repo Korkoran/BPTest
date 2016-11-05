@@ -72,6 +72,7 @@ def successfull_users():
     print len(bad_users)
 
 
+
 successfull_users()
 
 def improving_users():

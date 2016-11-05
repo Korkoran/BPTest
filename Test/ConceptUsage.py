@@ -89,8 +89,8 @@ def game_length_per_concept():
         for diktat in concept.dictates:
             tmp = session.loc[session['dictate'] == diktat.id, 'gameLength'].tolist()
             for i in range(len(tmp)):
-                if tmp[i] > 180000:
-                    tmp[i] = 180000
+                if tmp[i] > 300000:
+                    tmp[i] = 300000
             neco = sum(tmp)/len(tmp)
             #print 'diktat cislo: ' + str(diktat.id) + ' game Length: '+ str(neco) + ' cas na odpoved: ' + str(neco/len(diktat.answers))
             conceptTmp.append(neco/len(diktat.answers))

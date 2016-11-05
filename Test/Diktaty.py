@@ -62,7 +62,7 @@ plt.title('')
 plt.ylabel('Pocet pokusu')
 plt.xlabel('Delka diktatu')
 plt.plot(delky, pokusy, 'ro', delky, fit_fn(delky), '-r')
-
+plt.show()
 def getPomer():
     return pomerChyb
 
