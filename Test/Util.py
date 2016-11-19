@@ -13,6 +13,7 @@ parent = os.path.split(current_dir)
 dictateSession = pd.read_csv('%s/CSV/dictateSessionLog.csv' % (parent[0]), header = 0, sep = ';', parse_dates=['time'])
 sessionNoNan = pd.read_csv('%s/CSV/dictateSessionLog.csv' % (parent[0]), header = 0, sep = ';', skiprows=(1,603))
 dictate = pd.read_csv('%s/CSV/dictate.csv' % (parent[0]), header = 0, sep = ';')
+dicate_concept = pd.read_csv('%s/CSV/diktaty_concept_dictate.csv'  % (parent[0]), header = 0, sep = ';')
 # koncepty 5,6 nemaji zatim zaznam v session jinak
 # CONCEPTS = sorted(dictate.concept.unique())
 CONCEPTS = [1,2,3,4,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25]
@@ -25,6 +26,8 @@ diktaty_koncepty = {
 2: 'Vyjm sl M',
 3: 'Vyjm sl P',
 4: 'Shoda',
+5: 'Nic',
+6: 'Nic',
 7: 'Koncovky prid',
 8: 'n/nn',
 9: 'me/mne',
@@ -84,7 +87,9 @@ def getDictat(dictId):
     d = dictat()
 
     tmp = dictate.loc[dictate['id']==dictId]
+
     dictText = tmp['dictate'].tolist()[0].split()
+
     search = dictateSession.loc[dictateSession['dictate'] == dictId]
 
     tmp2 = [word for word in dictText if "|" in word]
@@ -94,7 +99,7 @@ def getDictat(dictId):
     d.answers = tmp2
     d.tries = len(search)
     d.length = len(dictText)
-    d.concept = tmp.concept.values[0]
+    d.concept = dicate_concept.loc[dicate_concept['dictate'] == d.id, 'concept'].tolist()[0]
     if len(search)!= 0:
         #d.mistakes = (search.mistakes.sum() / float(len(search)))/len(d.answers)*100
         d.mistakes = search.mistakes.sum() / float(len(search)) / len(d.answers)
@@ -132,9 +137,10 @@ def mistakesInDict(dictId):
 
 #vraci diktaty pro zadany koncept jako pole
 def numDictates(concept):
-    tmp = dictate.loc[dictate['concept'] == concept, 'id'].values.tolist()
-    tmp = [int(i) for i in tmp]
-    dictates = [getDictat(i) for i in tmp]
+    tmp = dicate_concept.loc[dicate_concept['concept'] == concept, 'dictate'].tolist()
+    #tmp = dictate.loc[dictate['concept'] == concept, 'id'].values.tolist()
+    tmp2 = [int(i) for i in tmp]
+    dictates = [getDictat(i) for i in tmp2]
     return dictates
 
 #vraci objekt typu concept
@@ -211,8 +217,6 @@ def conceptPopularity(conceptId):
     conceptTries = len(dictateSession.loc[dictateSession['concept']==conceptId])
     return conceptTries/float(allTries)*100
 
-neco = getDictat(95)
-
 #najde pro zadane datum prvni zaznam v logu
 #metoda pro DAU
 #vraci id zaznamu
@@ -220,11 +224,11 @@ def getNextDateTimeFrame(time):
     return dictateSession.loc[dictateSession['time']>pd.Timestamp(time), 'id'].tolist()[0]
 
 
-def proportionConfidenceInterval(trials, events):
-    pi_with_roof = events / float(trials)
+def proportionConfidenceInterval(tries, events):
+    pi_with_roof = events / float(tries)
     z = 1.96
-    return (pi_with_roof - z * (math.sqrt(pi_with_roof * (1 - pi_with_roof)/trials))
-            , pi_with_roof + z * (math.sqrt(pi_with_roof * (1 - pi_with_roof)/trials)))
+    return (pi_with_roof - z * (math.sqrt(pi_with_roof * (1 - pi_with_roof) / tries))
+            , pi_with_roof + z * (math.sqrt(pi_with_roof * (1 - pi_with_roof) / tries)))
 #predelat na nejakou normalni formu, overit jestli to sedi, zjistit cisla radku v logu
 #nektere chyby jsou zasahy admina
 def logError(dictId):
@@ -248,6 +252,8 @@ def standard_deviation(array_of_numbers):
     out = tmp / len(array_of_numbers)
 
     return math.sqrt(out)
+
+
 
 # ze stackoverflow - nevim jestli muzu pouzit
 
@@ -280,4 +286,4 @@ print getMostWrongWords(109).values()
 print getMostWrongWords(110).values()'''
 print '[' + ','.join("'" + str(x) + "'" for x in getDictat(105).answers) + ']'
 # print getConcept(4)
-print proportionConfidenceInterval(160,24)
+#print proportionConfidenceInterval(160,1020)

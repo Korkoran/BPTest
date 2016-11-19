@@ -105,5 +105,4 @@ blue_dot = mpatches.Patch(color='blue', label = 'Prumerne popularni koncept')
 green_dot = mpatches.Patch(color='green', label = 'Malo popularni koncept')
 
 plt.legend(handles = [red_dot, blue_dot, green_dot])
-plt.axis([40,180,0,500])
 plt.show()

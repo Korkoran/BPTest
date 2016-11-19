@@ -23,12 +23,14 @@ def conceptUsage():
         completePr = None
         avarageUse = None
         popularity = None
+        realName = None
 
     for concept in concepts:
 
         tmp = session.loc[session['concept'] == concept.id]
         uzivatele = tmp.user.unique()
         number_of_dictates = len(concept.dictates)
+
 
         for user in uzivatele:
             divided = len(tmp.loc[tmp['user']== user, 'dictate'].unique()) / float(number_of_dictates)
@@ -84,6 +86,7 @@ Zjisti v jakem konceptu travi uzivatele nejvic casu, s ohledem na ruzne delky di
 def game_length_per_concept():
 
     gameLengthPerConcept = []
+    err = []
     for concept in concepts:
         conceptTmp = []
         for diktat in concept.dictates:
@@ -95,24 +98,32 @@ def game_length_per_concept():
             #print 'diktat cislo: ' + str(diktat.id) + ' game Length: '+ str(neco) + ' cas na odpoved: ' + str(neco/len(diktat.answers))
             conceptTmp.append(neco/len(diktat.answers))
         length = len(conceptTmp)
+        err.append(Util.mean_confidence_interval(conceptTmp))
+
         conceptTmp = sum(conceptTmp) / length
         print conceptTmp
         gameLengthPerConcept.append(conceptTmp/float(1000))
 
+    print err
 
+    err2 = []
+    for e in err:
+        err2.append((e[0] - e[1]) /1000)
+    print err2
     plt.xticks(Util.numConcept, Util.STRCONCEPTS)
     plt.grid(True)
     # zkusit dodelat yerr
-    plt.title('Prumerny pocet sekund na jednu odpoved')
+    #plt.title('Prumerny pocet sekund na jednu odpoved')
     plt.xlabel('koncept')
     plt.ylabel('pocet sekund')
     plt.bar(Util.numConcept,
             gameLengthPerConcept,
             align='center',
+            yerr = err2,
             #yerr = [1,1,1,1,0,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22],
-            color='b')
+            color='g')
     plt.show()
-# game_length_per_concept()
+game_length_per_concept()
 
 def words_with_most_mistakes():
     diktaty = Util.getAllDictates()

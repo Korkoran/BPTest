@@ -7,8 +7,9 @@ import Util
 
 dictates = Util.getDictate()
 vystup = Util.getDictateSession()
+concept = Util.dicate_concept
 
-dict = dictates.concept.unique()
+dict = concept.concept.unique()
 print "!!!!!!!!!!!!!!!" + str(dict)
 dictId = dictates.id.tolist()
 dictText = dictates.dictate.tolist()

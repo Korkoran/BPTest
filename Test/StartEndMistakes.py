@@ -35,7 +35,7 @@ def start(fraction):
         #plt.plot(len(words), second, 'bo')
     print short
     print long
-    '''
+
     for l in long:
         words = Util.getMostWrongWords(l).values()
         first = words[:len(words)/fraction]
@@ -52,7 +52,7 @@ def start(fraction):
         if len(second) > len(first):
             first = (words[:(len(words) / fraction) + 1])
         if sum(second) !=0:
-            print "S: " + str(sum(first)) + " " + str(sum(second)) + " " + str(sum(second)/float(sum(first)))'''
+            print "S: " + str(sum(first)) + " " + str(sum(second)) + " " + str(sum(second)/float(sum(first)))
     plt.plot(length, out, 'ro')
     #plt.plot(length, second_fraction , 'bo')
     plt.show()

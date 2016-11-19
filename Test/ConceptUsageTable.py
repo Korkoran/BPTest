@@ -13,8 +13,7 @@ neco = []
 arrays = [[] for i in range(len(concepts))]
 ids = [conc.id for conc in concepts]
 for i in range(len(arrays)):
-    #arrays[i].append(Util.diktaty_koncepty[concepts[i].id])
-    arrays[i].append(concepts[i].id)
+    arrays[i].append(Util.diktaty_koncepty[concepts[i].id])
     arrays[i].append(str("%.1f " % concepts[i].avarageUse + '%'))
     arrays[i].append(str("%.1f " % concepts[i].completePr + '%'))
     arrays[i].append(str("%.1f " % concepts[i].popularity))

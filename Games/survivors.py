@@ -2,6 +2,7 @@ import Util
 import matplotlib.pyplot as plt
 import numpy
 import Test.Util as test_Util
+import matplotlib.patches as mpatches
 import math
 from collections import OrderedDict
 from operator import itemgetter
@@ -9,6 +10,7 @@ import scipy.stats as st
 import pandas as pd
 from datetime import datetime
 from enum import Enum
+from matplotlib_venn import venn3
 
 '''
 z logu nejde vycist jak hra vypada (jestli uzivatel zaplnil nektery sloupec tak, ze nesel dokoncit nebo
@@ -28,6 +30,7 @@ strileckaConcepts = [1, 2, 3, 4, 5, 6, 7, 9, 10, 11]
 robotiConcepts = [1, 2, 3, 4, 5, 6]
 tetrisConcepts = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
+print logs_tetris.loc[(logs_tetris['concept'] == 7) & (logs_tetris['level'] == 8)]
 
 # otestuje jestli hra existuje, nastavi globalni promenne log a concepts
 def test_game_name(game):
@@ -110,6 +113,7 @@ def firstLevelLossers(game):
     users = logs_roboti.user.unique()
     u = 0
     test_game_name(game)
+    users = log.user.unique()
 
     for user in users:
         tmp = log.loc[(log['user'] == user) & (log['level'] == 1)]
@@ -128,7 +132,7 @@ def firstLevelLossers(game):
 
 
 # kolik uzivatelu se dostalo pres levely
-# NEDOKONCENE
+# NEDOKONCENE - spatne pocita nektere uzivatele vicekrat
 def survivors(game):
     sur = [0] * 11
     restart = [0] * 11
@@ -137,19 +141,21 @@ def survivors(game):
     for level in levels:
         if game == "strilecka":
             sur[level] = logs_strilecka.loc[logs_strilecka['level'] == level, "success"].tolist().count(1)
-            restart[level] = logs_strilecka.loc[logs_strilecka['level'] == level, "success"].tolist().count(0)
+            restart[level] = sur[level] + logs_strilecka.loc[logs_strilecka['level'] == level, "success"].tolist().count(0)
         elif game == "tetris":
             sur[level] = logs_tetris.loc[logs_tetris['level'] == level, "success"].tolist().count(1)
-            restart[level] = logs_tetris.loc[logs_tetris['level'] == level, "success"].tolist().count(0)
+            restart[level] = sur[level] + logs_tetris.loc[logs_tetris['level'] == level, "success"].tolist().count(0)
         elif game == "roboti":
             sur[level] = logs_roboti.loc[logs_roboti['level'] == level, "success"].tolist().count(1)
-            restart[level] = logs_roboti.loc[logs_roboti['level'] == level, "success"].tolist().count(0)
+            restart[level] = sur[level] + logs_roboti.loc[logs_roboti['level'] == level, "success"].tolist().count(0)
         else:
             raise ValueError("Unknown game")
 
     sur[0] = sur[1] + firstLevelLossers(game)
-    print restart[1:]
+    print restart
+
     print sur
+    # return sur
 
     plt.title(str(game))
     plt.plot(sur, '-b')
@@ -157,12 +163,100 @@ def survivors(game):
     plt.xlabel("Level")
     plt.ylabel("Pocet uzivatelu")
     plt.xticks(range(0, 10))
+    plt.yticks(range(0,20000,2000))
     plt.grid(True)
+
     plt.show()
+    #return sur
 
 
-# survivors("roboti")
+#survivors("tetris")
 
+def all_survivors():
+    tetsur = survivors("tetris")
+    strisur = survivors("strilecka")
+    robosur = survivors("roboti")
+
+    tetout = []
+    tmax = tetsur[0]
+    del tetsur[0]
+    print tetsur
+    for t in tetsur:
+        tetout.append(t/float(tmax)*100)
+    striout = []
+    smax = strisur[0]
+    del strisur[0]
+    for s in strisur:
+        striout.append(s/float(smax)*100)
+    roboout = []
+    rmax = robosur[0]
+    del robosur[0]
+    for r in robosur:
+        roboout.append(r/float(rmax)*100)
+    print tetout
+    print striout
+    print roboout
+    plt.plot(tetout, '-r')
+    plt.plot(striout, '-b')
+    plt.plot(roboout, '-g')
+    plt.grid(True)
+
+    red_dot = mpatches.Patch(color='red', label = 'Tetris')
+    blue_dot = mpatches.Patch(color='blue', label = 'Strilecka')
+    green_dot = mpatches.Patch(color='green', label = 'Roboti')
+    plt.legend(handles = [red_dot, blue_dot, green_dot])
+    plt.xticks([1,9])
+    plt.show()
+# all_survivors()
+
+# Dodelat graf, ukazuje kolik lidi odeslo ikdyz meli dokonceny level
+def leavers(game):
+    test_game_name(game)
+    users = log.user.unique()
+    all_max =[0]*11
+    all_surv = [0]*11
+    levels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    all_restart = [0]*11
+    # print log.loc[log['level']==9]
+    for level in levels:
+        all_restart[level] = len(log.loc[log['level']==level])
+    for user in users:
+        local_log = log.loc[log['user'] == user]
+        if game == "roboti":
+            concepts = local_log.robotConcept.unique()
+        else:
+            concepts = local_log.concept.unique()
+        for concept in concepts:
+            if game == "roboti":
+                tmp = local_log.loc[local_log['robotConcept'] == concept]
+            else:
+                tmp = local_log.loc[local_log['concept'] == concept]
+            t = tmp.loc[(tmp['success'] == 1), 'level'].tolist()
+
+            if len(t)>0:
+                local_max = max(t)
+                if local_max<0 or local_max >10:
+                    continue
+                next_max = tmp.loc[tmp['level'] == local_max+1]
+                if len(next_max)==0:
+                    all_max[local_max] +=1
+                for i in t:
+                    all_surv[i] += 1
+
+    all_surv[0] = firstLevelLossers("roboti") + all_surv[1]
+    print all_max
+    print all_surv
+    print all_restart
+    plt.plot(all_max[0:9], '-r')
+    plt.plot(all_surv[0:9], '-b')
+    plt.plot(all_restart[0:9], '-g')
+    plt.grid(True)
+    ticks = range(1,8)
+    plt.xticks(range(1,8), range(2,9))
+    plt.yticks(range(0,all_restart[1]+2000,2000))
+    plt.xlabel("Level")
+    plt.show()
+# leavers("tetris")
 
 # oblibenost conceptu, nepoci s pridanim konceptu pocita vsechny dohromady
 # DODELAT zavislost na testgame
@@ -430,7 +524,7 @@ def triesPerGame(game):
     return numpy.mean(allTimes), numpy.median(allTimes)
 
 
-# triesPerGame("tetris")
+# print triesPerGame("tetris")
 
 def number_of_users(game):
     test_game_name(game)
@@ -625,7 +719,12 @@ def try_more_games():
     print len(n2)
     print len(n3)
     print celkem
+    set1 = set(roboti_users)
+    set2 = set(tetris_users)
+    set3 = set(strilecka_users)
 
+    venn3([set1, set2, set3], ('Roboti celkem: ' + str(len(roboti_users)), 'Tetris celkem: ' + str(len(tetris_users)), 'Strilecka celkem: ' + str(len(strilecka_users))))
+    plt.show()
 # try_more_games()
 
 # vypise pole s pocty chyb na indexu
@@ -653,7 +752,8 @@ def mistakes_test():
     #plt.plot(mistakes[0:25], 'r-')
     plt.grid(True)
     ticks = range(0,16)
-    plt.bar(ticks, mistakes[0:16])
+    plt.bar(ticks, mistakes[0:16], align = 'center')
+    plt.xticks(ticks)
     plt.show()
 # mistakes_test()
 
@@ -703,6 +803,29 @@ def returning_users(game):
     print len(second_month_users)
     print len(out)
 # returning_users("strilecka")
+def returning_users():
+    log = Util.tetris_session_log
+    start_first = "2016-09-08"
+    end_first = "2016-09-15"
+    start_second = "2016-09-15"
+    end_second = "2016-09-22"
+
+    first_month_users = log.loc[(log['time'] > pd.Timestamp(start_first)) &
+                                (log['time'] < pd.Timestamp(end_first)), 'user'].unique().tolist()
+    second_month_users = log.loc[(log['time'] > pd.Timestamp(start_second)) &
+                                 (log['time'] < pd.Timestamp(end_second)), 'user'].unique().tolist()
+
+    out = set(first_month_users).intersection(second_month_users)
+    print len(first_month_users)
+    print len(second_month_users)
+    print len(out)
+# returning_users()
+tzaklad1 =480
+tpole1=[27,32,10,18,14]
+tzaklad2 = 228
+tpole2 = [21,7,12,3,14]
+tzaklad3 = 727
+tpole3 =[86,27,28,18,10]
 
 # zjisti kolik uzivatelu odpadne po mesici a kolik novych se jich prida
 def more_new_players():
@@ -891,6 +1014,27 @@ def finnish_time(game, concept):
     #print local_log
 
 # finnish_time("tetris", 1)
+
+def roboti_words():
+    log = Util.get_roboti_shot_log()
+    words = log.word.unique()
+    diffe =[]
+    tries = []
+    for word in words:
+        local_log = log.loc[log['word'] == word]
+        corrects = local_log.correct.tolist()
+        rights = corrects.count(1)
+        wrongs = corrects.count(0)
+        if rights+wrongs !=0:
+            diff = rights / float(rights+wrongs)
+            diffe.append(diff)
+            tries.append(rights+wrongs)
+    print diffe
+    print tries
+    plt.plot(tries, diffe, 'ro')
+    plt.grid(True)
+    plt.show()
+# roboti_words()
 '''
 dulezite !!! jak zachazet s timestamp !!
 log = Util.strilecka_session_log.time
