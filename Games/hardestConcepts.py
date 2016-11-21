@@ -87,10 +87,10 @@ def hardest_concepts(game):
     plt.title(game.capitalize())
     plt.show()
 
-#hardest_concepts("tetris")
+# hardest_concepts("tetris")
 
 def too_many_mistakes(game):
     log = Util.tetris_session_log
     n =(log.loc[(log['mistakes'] > 15) & (log['success']==1)])
     print len(n.user.unique())
-too_many_mistakes("roboti")
+# too_many_mistakes("roboti")

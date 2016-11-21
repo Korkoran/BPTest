@@ -176,7 +176,25 @@ def realConceptMistakes(concID):
         return 0
     return mistakes / float(lenAllAnswers) * 100
 
+# DOJEBANY LOG
+def most_wrong_words():
+    dictates = dicate_concept.dictate.unique()
 
+    for dictate in dictates:
+        d = getDictat(dictate)
+        words = d.answers
+        out = [0]*len(words)
+        tmp = sessionNoNan.loc[dictateSession['dictate'] == dictate, 'answers'].tolist()
+        newList = [x for x in tmp if str(x) != 'nan']
+        print dictate
+        for answers in newList:
+            if len(x) > len(answers):
+                continue
+            for i in range(len(answers)):
+                if x[i] == "0":
+                    out[i]+=1
+    print out
+# most_wrong_words()
 #vraci slovnik s odpovedmi a poctem spatnych odpovedi pro diktat
 def getMostWrongWords(dictId):
     d = getDictat(dictId)
@@ -203,7 +221,7 @@ def getMostWrongWords(dictId):
     #result = dict(zip(answers, mistakes))
     return result
 
-
+#print getMostWrongWords(15)
 #DODELAT
 def answerFormat(answer):
     if '01' in answer:

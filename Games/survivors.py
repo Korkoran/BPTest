@@ -59,17 +59,14 @@ def logForTime(game):
 
     if game == "strilecka":
         pole = [0] * 62
-        low_time = 3000
         high_time = 50000
 
     elif game == "tetris":
         pole = [0] * 1000
-        low_time = 3000
         high_time = 230000
 
     elif game == "roboti":
         pole = [0] * 150
-        low_time = 3000
         high_time = 60000
 
     game_lengths = log.gameLength.tolist()
@@ -227,10 +224,19 @@ def leavers(game):
         else:
             concepts = local_log.concept.unique()
         for concept in concepts:
+            if concept <1:
+                continue
+            concept_max = 0
             if game == "roboti":
                 tmp = local_log.loc[local_log['robotConcept'] == concept]
+                concept_max = max(Util.roboti_level.loc[Util.roboti_level['concept'] == concept, 'level'].tolist())
             else:
                 tmp = local_log.loc[local_log['concept'] == concept]
+                if game == "tetris":
+                    concept_max = max(Util.tetris_level.loc[Util.tetris_level['concept'] == concept, 'level'].tolist())
+                else:
+                    concept_max = max(Util.strilecka_level.loc[Util.strilecka_level['concept'] == concept, 'level'].tolist())
+
             t = tmp.loc[(tmp['success'] == 1), 'level'].tolist()
 
             if len(t)>0:
@@ -238,12 +244,18 @@ def leavers(game):
                 if local_max<0 or local_max >10:
                     continue
                 next_max = tmp.loc[tmp['level'] == local_max+1]
-                if len(next_max)==0:
+                if len(next_max)==0 and local_max != concept_max:
                     all_max[local_max] +=1
                 for i in t:
                     all_surv[i] += 1
 
-    all_surv[0] = firstLevelLossers("roboti") + all_surv[1]
+    all_surv[0] = firstLevelLossers(game) + all_surv[1]
+    all_max[0] = all_max[1]
+    all_restart[0] = all_restart[1]
+    red_patch = mpatches.Patch(color='red', label='Odchazejici uzivatele')
+    blue_patch = mpatches.Patch(color='blue', label='Prezivsi')
+    green_patch = mpatches.Patch(color='green', label='Vsechny pokusy')
+    plt.legend(handles=[green_patch, blue_patch, red_patch ])
     print all_max
     print all_surv
     print all_restart
@@ -252,11 +264,11 @@ def leavers(game):
     plt.plot(all_restart[0:9], '-g')
     plt.grid(True)
     ticks = range(1,8)
-    plt.xticks(range(1,8), range(2,9))
+    plt.xticks(range(1,8), range(1,9))
     plt.yticks(range(0,all_restart[1]+2000,2000))
     plt.xlabel("Level")
     plt.show()
-# leavers("tetris")
+leavers("tetris")
 
 # oblibenost conceptu, nepoci s pridanim konceptu pocita vsechny dohromady
 # DODELAT zavislost na testgame
@@ -616,7 +628,7 @@ def compare_games_to_dictates_practiced_words(game):
 
     dictat_tmp = test_Util.dictateSession.user.unique()
     for u in game_tmp:
-        if len(game_loc.loc[game_loc['user'] == u]) > 5:
+        if len(game_loc.loc[game_loc['user'] == u]) > 1:
             game_users.append(u)
     for v in dictat_tmp:
         if len(dictat_log.loc[dictat_log['user'] == v]) > 5:
@@ -697,7 +709,7 @@ def compare_games_to_dictates_practiced_words(game):
         print numpy.mean(total)
         print numpy.median(total)
 
-# compare_games_to_dictates_practiced_words("roboti")
+compare_games_to_dictates_practiced_words("tetris")
 # zjisti kolik lidi vyzkousi vice nez jednu hru
 # zkontrolovat vraci prekvapive moc
 def try_more_games():
